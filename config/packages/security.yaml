@@ -1,0 +1,73 @@
+security:
+    encoders:
+        Symfony\Component\Security\Core\User\User: 'auto'
+        App\Entity\User:
+            algorithm: auto
+
+    role_hierarchy:
+        ROLE_ADMIN: ROLE_USER
+        ROLE_SUPER_ADMIN: ROLE_ADMIN
+    # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
+    providers:
+        chain_provider:
+            chain:
+                providers: [app_user_provider, in_memory]
+        in_memory:
+            memory:
+                users:
+                    superadmin:
+                        password: '$argon2id$v=19$m=65536,t=4,p=1$ntzCN8YnqxPF7h8vKuvYQg$vee1heTEF/CJcWqsoLZrdsCaROjgKFU+UXtKI1GGjj4'
+                        roles: ['ROLE_SUPER_ADMIN']
+        # used to reload user from session & other features (e.g. switch_user)
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: username
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        api_login:
+            pattern:  ^/api/auth/login
+            stateless: true
+            anonymous: true
+            json_login:
+                provider: chain_provider
+                check_path:               /api/auth/login_check
+                success_handler:          lexik_jwt_authentication.handler.authentication_success
+                failure_handler:          lexik_jwt_authentication.handler.authentication_failure
+            provider: chain_provider
+        api_register:
+            pattern:  ^/api/auth/register
+            stateless: true
+            anonymous: true
+        api_doc:
+            pattern:  ^/api/doc
+            stateless: true
+            anonymous: true
+        api:
+            pattern:   ^/api
+            stateless: true
+            provider: chain_provider
+            guard:
+                authenticators:
+                    - lexik_jwt_authentication.jwt_token_authenticator
+        main:
+            pattern: ^/
+            anonymous: true
+            lazy: true
+            logout:
+                path: app_logout
+                target: api_login
+
+
+    # Easy way to control access for large sections of your site
+    # Note: Only the *first* access control that matches will be used
+    access_control:
+        - { path: ^/api/auth/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/doc, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/auth/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
+
+        # - { path: ^/admin, roles: ROLE_ADMIN }
+        # - { path: ^/profile, roles: ROLE_USER }

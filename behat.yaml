@@ -1,0 +1,11 @@
+default:
+  extensions:
+    FriendsOfBehat\SymfonyExtension: ~
+    Imbo\BehatApiExtension:
+      apiClient:
+        base_uri: http://127.0.0.1:8000
+  suites:
+    default:
+      contexts:
+        - App\Tests\Behat\BehatContext
+        - App\Tests\Behat\ApiContextAuth
