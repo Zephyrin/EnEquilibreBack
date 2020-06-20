@@ -14,6 +14,8 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use App\Serializer\FormErrorSerializer;
+use Symfony\Contracts\Translation\TranslatorInterface;
+
 /**
  * @Route("/api")
  * @SWG\Tag(
@@ -37,20 +39,27 @@ class UserController extends AbstractController
      */
     private $entityManager;
 
+    /**
+     * @var TranslatorInterface
+     */
+    private $translator;
+
     public function __construct(
         EntityManagerInterface $entityManager,
         FormErrorSerializer $formErrorSerializer,
-        UserPasswordEncoderInterface $passwordEncoder
+        UserPasswordEncoderInterface $passwordEncoder,
+        TranslatorInterface $translator
     ) {
         $this->entityManager = $entityManager;
         $this->formErrorSerializer = $formErrorSerializer;
         $this->passwordEncoder = $passwordEncoder;
+        $this->translator = $translator;
     }
 
     /**
      * Register an user to the DB.
      *
-     * @Route("/auth/register", name="api_auth_register",  methods={"POST"})
+     * @Route("/{_locale}/auth/register", name="api_auth_register",  methods={"POST"}, requirements={"_locale": "en|fr"})
      *
      * @SWG\Post(
      *     consumes={"application/json"},
@@ -97,9 +106,9 @@ class UserController extends AbstractController
         {
             return new JsonResponse(
                 [
-                    'status' => 'error',
-                    'message' => 'Validation error',
-                    'errors' => $this->formErrorSerializer->normalize($form),
+                    'status' => $this->translator->trans('error'),
+                    'message' => $this->translator->trans('validation.error'),
+                    'errors' => $this->formErrorSerializer->normalize($form)
                 ],
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );

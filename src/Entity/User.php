@@ -21,13 +21,14 @@ class User implements UserInterface
     private $id;
 
      /**
-     * @ORM\Column(type="string", length=180, unique=true)
+     * @ORM\Column(type="string", length=64, unique=true)
      * @Asset\NotBlank()
      */
     private $username;
 
     /**
-     * @ORM\Column(type="string", length=180, unique=true)
+     * @ORM\Column(type="string", length=64, unique=true)
+     * @Asset\NotBlank()
      */
     private $email;
 
@@ -39,6 +40,14 @@ class User implements UserInterface
     /**
      * @var string The hashed password
      * @ORM\Column(type="string")
+     * @Asset\NotBlank()
+     * @Asset\Length(
+     *  min=6,
+     *  max=64,
+     *  minMessage = "validators.min.message",
+     *  maxMessage = "validators.max.message",
+     *  allowEmptyString = false
+     * )
      */
     private $password;
 
@@ -98,12 +107,12 @@ class User implements UserInterface
     /**
      * @see UserInterface
      */
-    public function getPassword(): string
+    public function getPassword(): ?string
     {
         return (string) $this->password;
     }
 
-    public function setPassword(string $password): self
+    public function setPassword(?string $password): self
     {
         $this->password = $password;
 

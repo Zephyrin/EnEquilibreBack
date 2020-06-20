@@ -1,0 +1,7 @@
+error: Error.
+
+invalid:
+  credentials: Invalid credentials.
+
+validation:
+  error: Validation error.

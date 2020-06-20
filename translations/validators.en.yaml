@@ -1,0 +1,5 @@
+validators:
+  min:
+    message: This value must be at least {{ limit }} character long.|This value must be at least {{ limit }} characters long.
+  max:
+    message: This value cannot be longer than {{ limit }} character.|This value cannot be longer than {{ limit }} characters.

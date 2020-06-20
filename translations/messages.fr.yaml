@@ -1,0 +1,6 @@
+error: Erreur.
+invalid:
+  credentials: Les informations d'identification sont invalides.
+
+validation:
+  error: Erreur de validation.

@@ -28,17 +28,17 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         api_login:
-            pattern:  ^/api/auth/login
+            pattern:  ^/api/(en|fr)/auth/login
             stateless: true
             anonymous: true
             json_login:
                 provider: chain_provider
-                check_path:               /api/auth/login_check
+                check_path:               api_login_check
                 success_handler:          lexik_jwt_authentication.handler.authentication_success
                 failure_handler:          lexik_jwt_authentication.handler.authentication_failure
             provider: chain_provider
         api_register:
-            pattern:  ^/api/auth/register
+            pattern:  ^/api/(en|fr)/auth/register
             stateless: true
             anonymous: true
         api_doc:
@@ -64,9 +64,11 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        - { path: ^/api/auth/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/en/auth/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/fr/auth/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/doc, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api/auth/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/en/auth/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/fr/auth/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
 
         # - { path: ^/admin, roles: ROLE_ADMIN }

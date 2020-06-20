@@ -66,25 +66,25 @@ final class BehatContext implements Context
         /* Create default super admin user into the database then create other users. */
         $this->iAmLoginAs('superadmin');
         $this->logout();
-        $this->createUser("admin", "admin", "admin@en_equilibre", "FEMALE");
+        $this->createUser("admin", "admin_admin", "admin@en_equilibre", "FEMALE");
         $this->logout();
         $this->iAmLoginAs("superadmin");
         $this->apiContext->setRequestBody(
             "{\"roles\": [\"ROLE_AMBASSADOR\"]}"
         );
-         $this->apiContext->requestPath("/api/user/2", 'PATCH');
+         $this->apiContext->requestPath("/api/en/user/2", 'PATCH');
         $this->logout();
-        $this->createUser("user", "user", "user@en_equilibre.com", "FEMALE");
+        $this->createUser("user", "user_user", "user@en_equilibre.com", "FEMALE");
         $this->logout();
     }
 
     private function createUser($name, $password, $email, $gender) {
-        $this->apiContext->setRequestBody("{
-            \"username\": \"".$name."\",
-            \"password\": \"".$password."\",
-            \"email\": \"".$email."\"
-        }");
-        $this->apiContext->requestPath("/api/auth/register", 'POST');
+        $this->apiContext->setRequestBody('{
+            "username": "'.$name.'",
+            "password": "'.$password.'",
+            "email": "'.$email.'"
+        }');
+        $this->apiContext->requestPath("/api/en/auth/register", 'POST');
         $this->apiContext->getTokenFromLogin();
     }
 
@@ -94,8 +94,8 @@ final class BehatContext implements Context
      */
      public function iAmLoginAs(string $login) {
         $this->apiContext->setRequestBody(
-            '{"username": "'.$login.'", "password": "'.$login.'"}');
-        $this->apiContext->requestPath('/api/login_check', 'POST');
+            '{"username": "'.$login.'", "password": "'.($login == 'superadmin' ? 'a' : $login.'_'.$login).'"}');
+        $this->apiContext->requestPath('/api/en/auth/login_check', 'POST');
         $this->apiContext->getTokenFromLogin();
      }
 

@@ -1,3 +1,5 @@
 api_login_check:
-  path: /api/auth/login_check
+  path: /api/{_locale}/auth/login_check
   methods: [POST]
+  requirements:
+    _locale: en|fr
