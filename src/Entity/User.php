@@ -44,8 +44,6 @@ class User implements UserInterface
      * @Asset\Length(
      *  min=6,
      *  max=64,
-     *  minMessage = "validators.min.message",
-     *  maxMessage = "validators.max.message",
      *  allowEmptyString = false
      * )
      */

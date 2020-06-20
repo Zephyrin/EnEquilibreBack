@@ -130,3 +130,43 @@ Feature: Register an user using english language
             ]
         }
         """
+
+    Scenario: I will register with a too long username, password and email get error information in english
+        Given the request body is:
+        """
+        {
+            "username": "user_new2user_new2user_new2user_new2user_new2user_new2user_new2user_new2",
+            "password": "bépoèdjzwauiectsrnmçàyxkqgbépoèdjzwauiectsrnmçàyxkqgbépoèdjzwauieei",
+            "email": "user_new2@en_equilibre.comuser_new2@en_equilibre.comuser_new2@en_equilibre.com"
+        }
+        """
+        When I request "api/en/auth/register" using HTTP POST
+        Then the response code is 422
+        And the response body contains JSON:
+        """
+        {
+            "status": "Error.",
+            "message": "Validation error.",
+            "errors": [
+                {
+                    "children": {
+                        "username": {
+                            "errors": [
+                                "This value cannot be longer than 64 characters."
+                            ]
+                        },
+                        "password": {
+                            "errors": [
+                                "This value cannot be longer than 64 characters."
+                            ]
+                        },
+                        "email": {
+                            "errors": [
+                                "This value cannot be longer than 64 characters."
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+        """

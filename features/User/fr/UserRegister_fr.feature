@@ -130,3 +130,43 @@ Feature: Register an user using french language
             ]
         }
         """
+    
+    Scenario: I will register with a too long username, password and email get error information in french
+        Given the request body is:
+        """
+        {
+            "username": "user_new2user_new2user_new2user_new2user_new2user_new2user_new2user_new2",
+            "password": "bépoèdjzwauiectsrnmçàyxkqgbépoèdjzwauiectsrnmçàyxkqgbépoèdjzwauieei",
+            "email": "user_new2@en_equilibre.comuser_new2@en_equilibre.comuser_new2@en_equilibre.com"
+        }
+        """
+        When I request "api/fr/auth/register" using HTTP POST
+        Then the response code is 422
+        And the response body contains JSON:
+        """
+        {
+            "status": "Erreur.",
+            "message": "Erreur de validation.",
+            "errors": [
+                {
+                    "children": {
+                        "username": {
+                            "errors": [
+                                "Cette valeur ne doit pas dépasser les 64 charactères de long."
+                            ]
+                        },
+                        "password": {
+                            "errors": [
+                                "Cette valeur ne doit pas dépasser les 64 charactères de long."
+                            ]
+                        },
+                        "email": {
+                            "errors": [
+                                "Cette valeur ne doit pas dépasser les 64 charactères de long."
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+        """
