@@ -3,5 +3,8 @@ error: Error.
 invalid:
   credentials: Invalid credentials.
 
+token:
+  expired: Your token is expired.
+
 validation:
   error: Validation error.

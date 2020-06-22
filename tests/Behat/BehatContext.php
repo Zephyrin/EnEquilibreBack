@@ -2,7 +2,9 @@
 
 namespace App\Tests\Behat;
 
+use PHPUnit\Framework\Assert;
 use Behat\Behat\Context\Context;
+use Behat\Gherkin\Node\TableNode;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Doctrine\ORM\EntityManager;
@@ -90,7 +92,8 @@ final class BehatContext implements Context
 
     /**
      * @Given I am login as :login
-     * @param string $login
+     * 
+     * @param string $login can be user, admin or superadmin.
      */
      public function iAmLoginAs(string $login) {
         $this->apiContext->setRequestBody(
@@ -106,12 +109,51 @@ final class BehatContext implements Context
         $this->apiContext->logout();
      }
 
+     /**
+      * @Then I save the :value
+      */
+      public function thenISaveThe($value) 
+      {
+          $this->apiContext->thenISaveThe($value);
+      }
+
+      /**
+       * @Then the previous filename should not exists
+       *
+       * @return void
+       */
+      public function thePreviousValueShouldNotExists()
+      {
+        Assert::assertEquals(file_exists($this->apiContext->savedValue), false);
+      }
+
     /**
      * @Then the response body has :nbField fields
      */
     public function theResponseBodyHasFields($nbField)
     {
         $this->apiContext->theResponseBodyHasFields($nbField);
+    }
+
+    /**
+     * @Given there are objects to post to :address with the following details:
+     * @param TableNode $objects
+     * @throws \Imbo\BehatApiExtension\Exception\AssertionFailedException
+     */
+    public function thereAreObjectsToPostToWithTheFollowingDetails($address, TableNode $objects)
+    {
+        $this->iAmLoginAs("admin");
+        foreach ($objects->getColumnsHash() as $object) {
+            $this->apiContext->setRequestBody(
+                json_encode($object)
+            );
+            $this->apiContext->requestPath(
+                $address,
+                'POST'
+            );
+            $this->apiContext->assertResponseCodeIs(201);
+        }
+        $this->logout();
     }
 
     /**
@@ -125,6 +167,20 @@ final class BehatContext implements Context
         $schemaTool->dropDatabase();
         if (!empty($metaData)) {
             $schemaTool->createSchema($metaData);
+        }
+        $this->unlinkFiles();
+    }
+
+    /**
+     * @Given unlink files
+     *
+     * @return void
+     */
+    public function unlinkFiles() {
+        $files = glob("public/media/*"); // get all file names
+        foreach($files as $file){ // iterate files
+        if(is_file($file))
+            unlink($file); // delete file
         }
     }
 }

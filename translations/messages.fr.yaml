@@ -1,6 +1,7 @@
 error: Erreur.
 invalid:
   credentials: Les informations d'identification sont invalides.
-
+token:
+  expired: Ton jeton d'authentification est expiré.
 validation:
   error: Erreur de validation.

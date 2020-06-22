@@ -3,3 +3,7 @@ api_login_check:
   methods: [POST]
   requirements:
     _locale: en|fr
+
+mediaobject:
+     type:     annotation
+     resource: App\Controller\MediaObjectController

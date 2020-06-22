@@ -3,7 +3,7 @@ fos_rest:
     body_converter:
         enabled: true
     routing_loader: false
-#        include_format: false
+#        default_format: json
     format_listener:
         rules:
             - { path: ^/api, prefer_extension: false, fallback_format: json, priorities: [ json ] }

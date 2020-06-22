@@ -8,6 +8,8 @@ use PHPUnit\Framework\Assert;
 class ApiContextAuth extends Context\ApiContext
 {
     protected $token;
+    public string $savedValue;
+
     public function getTokenFromLogin()
     {
         $this->token = '';
@@ -35,5 +37,11 @@ class ApiContextAuth extends Context\ApiContext
 
         $body = $this->getResponseBody();
         Assert::assertEquals(count((array)$body), $nbField);
+    }
+
+    public function thenISaveThe($value) {
+        $this->requireResponse();
+        $body = $this->getResponseBody();
+        $this->savedValue = ((array)$body)[$value];
     }
 }
