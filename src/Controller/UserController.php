@@ -15,6 +15,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use App\Serializer\FormErrorSerializer;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use DateTime;
 
 /**
  * @Route("/api")
@@ -121,6 +122,8 @@ class UserController extends AbstractController
         ));
 
         $user->setRoles(['ROLE_USER']);
+        $user->setCreated(new DateTime());
+        $user->setLastLogin(new DateTime());
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 

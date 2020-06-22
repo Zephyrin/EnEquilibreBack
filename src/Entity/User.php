@@ -6,6 +6,9 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Asset;
+use JMS\Serializer\Annotation\SerializedName;
+use Swagger\Annotations as SWG;
+use DateTime;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
@@ -48,6 +51,24 @@ class User implements UserInterface
      * )
      */
     private $password;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     * @SerializedName("lastLogin")
+     * @SWG\Property(
+     *  description="The last login of user")
+     * @var DateTime
+     */
+    private $lastLogin;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     * @SerializedName("created")
+     * @SWG\Property(
+     *  description="The date when the user was created")
+     * @var DateTime
+     */
+    private $created;
 
     public function getId(): ?int
     {
@@ -132,5 +153,27 @@ class User implements UserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    public function getLastLogin(): DateTime
+    {
+        return $this->lastLogin;
+    }
+
+    public function setLastLogin(DateTime $lastLogin): self
+    {
+        $this->lastLogin = $lastLogin;
+        return $this;
+    }
+
+    public function getCreated(): DateTime
+    {
+        return $this->created;
+    }
+
+    public function setCreated(DateTime $created): self
+    {
+        $this->created = $created;
+        return $this;
     }
 }
