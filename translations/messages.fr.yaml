@@ -6,7 +6,7 @@ image:
       decode:
         failed: Erreur lors du décodage du base64.
       uri: Ce n'est pas une image en base64.
-    type: Ce type d'image n'est pas supporté. Les formtas supportés sont le jpg, jpeg, png ou svg. 
+    type: Ce type d'image n'est pas supporté. Les formtas supportés sont le jpg, jpeg, png ou svg.
     save: Impossible de sauvegarder l'image.
 
 invalid:
