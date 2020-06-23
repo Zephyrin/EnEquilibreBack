@@ -5,6 +5,7 @@ namespace App\Controller\Helpers;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -54,10 +55,25 @@ trait HelperController
         return true;
     }
 
-    public function setCreatedByAndValidateToFalse(FormInterface $form, $connectUser = null) {
-        $insertData = $form->getData();
-        if ($connectUser == null) { $connectUser = $this->getUser(); }
-        $insertData->setCreatedBy($connectUser);
-        return $insertData;
+    /**
+     * Return the data of the JSON or a validation error.
+     *
+     * @param Request $request
+     * @param boolean $assoc
+     * @return mixed
+     */
+    public function getDataFromJson(Request $request, bool $assoc, TranslatorInterface $translator) {
+        $data = json_decode($request->getContent(), $assoc);
+        if($data === null || count($data) === 0) {
+            return new JsonResponse(
+                [
+                    'status' => $translator->trans('error'),
+                    'message' => $translator->trans('validation.error'),
+                    'errors' => $translator->trans('json.empty.error'),
+                ],
+                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
+            );
+        }
+        return $data;
     }
 }

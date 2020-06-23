@@ -9,8 +9,9 @@ use Symfony\Component\HttpKernel\KernelInterface;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\SchemaTool;
+use Exception;
 
-final class BehatContext implements Context
+final class FeatureContext implements Context
 {
     /**
      * An helper for authentication and body acces.
@@ -33,12 +34,73 @@ final class BehatContext implements Context
      */
     private $em;
 
+    private static $hasOwnServer = false;
 
     public function __construct(KernelInterface $kernel)
     {
         $this->kernel = $kernel;
         $this->em = $this->kernel
             ->getContainer()->get('doctrine.orm.entity_manager');
+    }
+
+    /**
+     * Launch the symfony server for test.
+     * @BeforeSuite
+     *
+     * @return void
+     */
+    public static function server() {
+        $tab_output = [];
+        $hasServer = false;
+        print_r(exec('symfony server:status', $tab_output, $ret));
+        foreach($tab_output as $output) {
+            if (strpos($output, "Listening on") !== false) {
+                $hasServer = true;
+                break; 
+            }
+        }
+        if($hasServer === false)
+        {
+            exec('APP_ENV=test symfony server:start -d', $tab_output, $ret);
+            if($ret === 0) {
+                FeatureContext::$hasOwnServer = true;
+                print_r("Server start");
+            }
+        }
+    }
+
+    /**
+     * @AfterSuite
+     *
+     * @return void
+     */
+    public static function stopServer() {
+        if(FeatureContext::$hasOwnServer) {
+            exec('symfony server:stop');
+            print_r("server stop");
+        }
+    }
+    /**
+     * @BeforeFeature
+     *
+     * @return void
+     */
+    public static function prepare()
+    {
+        $tab_output = [];
+        exec('php bin/console doctrine:database:drop --if-exists --force -n -e test', $tab_output, $ret);
+        if($ret != 0) {
+            throw new Exception("Unable to delete the database.");
+        }
+        exec('php bin/console doctrine:database:create --if-not-exists -n -e test', $tab_output, $ret);
+        if($ret != 0) {
+            throw new Exception("Unable to create the database.");
+        }
+        exec('php bin/console doctrine:migrations:migrate -n -e test', $tab_output, $ret);
+        if($ret != 0) {
+            throw new Exception("Unable to apply migrations");
+        }
+        print_r('Clearing database done.');
     }
 
     /** @BeforeScenario
@@ -71,10 +133,10 @@ final class BehatContext implements Context
         $this->createUser("admin", "admin_admin", "admin@en_equilibre", "FEMALE");
         $this->logout();
         $this->iAmLoginAs("superadmin");
-        $this->apiContext->setRequestBody(
+        /* $this->apiContext->setRequestBody(
             "{\"roles\": [\"ROLE_AMBASSADOR\"]}"
         );
-         $this->apiContext->requestPath("/api/en/user/2", 'PATCH');
+         $this->apiContext->requestPath("/api/en/user/2", 'PATCH'); */
         $this->logout();
         $this->createUser("user", "user_user", "user@en_equilibre.com", "FEMALE");
         $this->logout();
@@ -102,6 +164,12 @@ final class BehatContext implements Context
         $this->apiContext->getTokenFromLogin();
      }
 
+     /**
+      * @Given I am login with expired token
+      */
+     public function iAmLoginWithExpiredToken() {
+        $this->apiContext->iAmLoginWithExpiredToken();
+     }
     /**
      * @logout
      */
@@ -144,6 +212,17 @@ final class BehatContext implements Context
     {
         $this->iAmLoginAs("admin");
         foreach ($objects->getColumnsHash() as $object) {
+            foreach(array_keys($object) as $key) {
+                if(strpos($key, "#") === 0) {
+                    $datas = explode(",", $object[$key]);
+                    $object[substr($key, 1)] = [];
+                    foreach($datas as $lang) {
+                        $lang_trad = explode(":", $lang);
+                        $object[substr($key, 1)][trim($lang_trad[0])] = trim($lang_trad[1]);
+                    }
+                    unset($object[$key]);
+                }
+            }
             $this->apiContext->setRequestBody(
                 json_encode($object)
             );

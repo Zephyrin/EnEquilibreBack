@@ -1,7 +1,15 @@
 error: Erreur.
+
 invalid:
   credentials: Les informations d'identification sont invalides.
+
+json:
+  empty:
+    error: Le body de la requête ne contient pas de JSon valide.
+
 token:
   expired: Ton jeton d'authentification est expiré.
+  missing: Tu n'es pas connecté.
+
 validation:
   error: Erreur de validation.

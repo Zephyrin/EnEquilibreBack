@@ -3,8 +3,13 @@ error: Error.
 invalid:
   credentials: Invalid credentials.
 
+json:
+  empty:
+    error: The body of the request does not contain a valid JSon.
+
 token:
   expired: Your token is expired.
+  missing: You are not connected.
 
 validation:
   error: Validation error.

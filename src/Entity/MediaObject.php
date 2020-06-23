@@ -7,6 +7,8 @@ use Swagger\Annotations as SWG;
 use JMS\Serializer\Annotation\SerializedName;
 use App\Repository\MediaObjectRepository;
 use Symfony\Component\Validator\Constraints as Asset;
+use Gedmo\Mapping\Annotation as Gedmo;
+use Gedmo\Translatable\Translatable;
 
 /**
  * @ORM\Entity(repositoryClass=MediaObjectRepository::class)
@@ -15,7 +17,7 @@ use Symfony\Component\Validator\Constraints as Asset;
  * )
  * 
  */
-class MediaObject
+class MediaObject implements Translatable
 {
     /**
      * @var int|null
@@ -36,7 +38,7 @@ class MediaObject
 
     /**
      * @var string|null
-     * 
+     * @Gedmo\Translatable
      * @ORM\Column(type="string", length=1024, nullable=true)
      * @SWG\Property(description="The description of image use for alt description.")
      * @Asset\Length(
@@ -45,6 +47,13 @@ class MediaObject
      * )
      */
     private $description;
+
+    /**
+     * @Gedmo\Locale
+     * Used locale to override Translation listener`s locale
+     * this is not a mapped field of entity metadata, just a simple property
+     */
+    private $locale;
 
     public function __construct() {
         $this->filePath = "";
@@ -77,5 +86,10 @@ class MediaObject
         $this->filePath = $filePath;
 
         return $this;
+    }
+
+    public function setTranslatableLocale($locale)
+    {
+        $this->locale = $locale;
     }
 }

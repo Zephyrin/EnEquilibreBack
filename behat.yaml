@@ -7,5 +7,5 @@ default:
   suites:
     default:
       contexts:
-        - App\Tests\Behat\BehatContext
+        - App\Tests\Behat\FeatureContext
         - App\Tests\Behat\ApiContextAuth

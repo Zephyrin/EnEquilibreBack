@@ -5,6 +5,7 @@
         "php": "^7.2.5",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "antishov/doctrine-extensions-bundle": "^1.4",
         "doctrine/annotations": "^1.10",
         "friendsofsymfony/rest-bundle": "^3.0",
         "jms/serializer-bundle": "^3.6",

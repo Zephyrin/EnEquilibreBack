@@ -7,11 +7,11 @@ use App\Repository\MediaObjectRepository;
 use App\Form\MediaObjectType;
 use App\Controller\Helpers\HelperController;
 use App\Controller\Helpers\MediaObjectHelperController;
+use App\Controller\Helpers\TranslatableHelperController;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
 use Exception;
-/* use FOS\RestBundle\Controller\Annotations as Rest;
- */use FOS\RestBundle\Controller\AbstractFOSRestController;
+use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\View\View;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -33,6 +33,8 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class MediaObjectController extends AbstractFOSRestController 
 {
+    use TranslatableHelperController;
+
     use HelperController;
     /**
      * Helper to save the image into a folder.
@@ -56,6 +58,11 @@ class MediaObjectController extends AbstractFOSRestController
      */
     private $translator;
 
+    /**
+     * The field name use for translation.
+     */
+    private string $description = "description"; 
+
     public function __construct(
         EntityManagerInterface $entityManager,
         MediaObjectRepository $mediaObjectRepository,
@@ -74,8 +81,9 @@ class MediaObjectController extends AbstractFOSRestController
      * @Route("/{_locale}/mediaobject",
      *  name="api_mediaobject_post",
      *  methods={"POST"},
-     *  requirements={"_locale": "en|fr"}
-     * )
+     *  requirements={
+     *      "_locale": "en|fr"
+     * })
      * 
      * @SWG\Post(
      *     consumes={"application/json"},
@@ -115,33 +123,21 @@ class MediaObjectController extends AbstractFOSRestController
      */
     public function postAction(Request $request)
     {
-        $data = json_decode(
-            $request->getContent(),
-            true
-        );
+        $data = $this->getDataFromJson($request, true, $this->translator);
+        if($data instanceof JsonResponse) 
+            return $data;
+        $this->setLang($data, $this->description);
         $form = $this->createForm(
             MediaObjectType::class,
             new MediaObject()
         );
         $form = $form->submit($data, false);
-        $a = $form->getData();
-        if(false == $form->isValid())
-        {
-            $tmp = $form->getErrors();
-            return new JsonResponse(
-                [
-                    'status' => $this->translator->trans('error'),
-                    'message' => $this->translator->trans('validation.error'),
-                    'errors' => $this->formErrorSerializer->normalize($form)
-                ],
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
         $validation = $this->validationError($form, $this, $this->translator);
         if($validation instanceof JsonResponse)
             return $validation;
 
         $mediaObject = $form->getData();
+        $this->translate($mediaObject, $this->description, $this->entityManager);
         $mediaObject->setFilePath($this->manageImage($data, $this->translator));
         $this->entityManager->persist($mediaObject);
         $this->entityManager->flush();
@@ -229,7 +225,9 @@ class MediaObjectController extends AbstractFOSRestController
     }
 
     /**
-     * Update an MediaObject.
+     * Update an MediaObject entirely.
+     * Warning: Languages are not taken into account yet. If one language is missing, 
+     * then this language will not change and will not be delete. For a language it's more like a PATCH.
      *
      * @Route("/{_locale}/mediaobject/{id}",
      *  name="api_mediaobject_put",
@@ -410,12 +408,16 @@ class MediaObjectController extends AbstractFOSRestController
     {
         $existingMediaObjectField = $this->findMediaObjectById($id);
         $form = $this->createForm(MediaObjectType::class, $existingMediaObjectField);
-        $data = json_decode($request->getContent(), true);
+        $data = $this->getDataFromJson($request, true, $this->translator);
+        if($data instanceof JsonResponse) 
+            return $data;
+        $this->setLang($data, $this->description);
         $form->submit($data, $clearMissing);
         $validation = $this->validationError($form, $this, $this->translator);
         if($validation instanceof JsonResponse)
             return $validation;
         $mediaObject = $form->getData();
+        $this->translate($mediaObject, $this->description, $this->entityManager, $clearMissing);
         $mediaObject->setFilePath(
             $this->manageImage($data,
                                $this->translator,
@@ -426,10 +428,5 @@ class MediaObjectController extends AbstractFOSRestController
         return $this->view(null, Response::HTTP_NO_CONTENT);
     }
 
-    private function endsWith($string, $test) {
-        $strLen = strlen($string);
-        $testLen = strlen($test);
-        if ($testLen > $strLen) return false;
-        return substr_compare($string, $test, $strLen - $testLen, $testLen) === 0;
-    }
+
 }

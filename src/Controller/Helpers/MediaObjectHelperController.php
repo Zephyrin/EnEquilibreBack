@@ -73,4 +73,11 @@ trait MediaObjectHelperController
             return $filename;
         }
     }
+
+    private function endsWith($string, $test) {
+        $strLen = strlen($string);
+        $testLen = strlen($test);
+        if ($testLen > $strLen) return false;
+        return substr_compare($string, $test, $strLen - $testLen, $testLen) === 0;
+    }
 }
