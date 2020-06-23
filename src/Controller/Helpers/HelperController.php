@@ -2,12 +2,14 @@
 
 namespace App\Controller\Helpers;
 
+use Behat\Behat\Definition\Translator\Translator;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Exception;
 
 /**
  * This trait help for paginate header and add some usefull fonction like error.
@@ -75,5 +77,30 @@ trait HelperController
             );
         }
         return $data;
+    }
+
+    public function formatErrorManageImage(array $data, Exception $e, TranslatorInterface $translator) {
+        $children = [];
+
+        foreach($data as $key => $value) {
+            
+            if($key === "image") {
+                $error["errors"] = [$translator->trans($e->getMessage())]; 
+                $children[$key] = $error;
+            } else {
+                $children[$key] = [];
+            }
+        }
+        $errors = [];
+        $tmp["children"] = $children;
+        array_push($errors, $tmp);
+        
+
+        return new JsonResponse(
+            [
+                'status' => $translator->trans('error'),
+                'message' => $translator->trans('validation.error'),
+                'errors' => $errors
+            ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
     }
 }

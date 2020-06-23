@@ -1,5 +1,15 @@
 error: Error.
 
+image:
+  failed:
+    base64:
+      decode:
+        failed: Base64 decode failed.
+      uri: This is not an image in base64.
+    type: This image type is not support. Only gif, jpg, jpeg, png or svg are support. 
+    save: Cannot save image data to file.
+
+
 invalid:
   credentials: Invalid credentials.
 

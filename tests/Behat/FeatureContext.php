@@ -52,7 +52,7 @@ final class FeatureContext implements Context
     public static function server() {
         $tab_output = [];
         $hasServer = false;
-        print_r(exec('symfony server:status', $tab_output, $ret));
+        exec('symfony server:status', $tab_output, $ret);
         foreach($tab_output as $output) {
             if (strpos($output, "Listening on") !== false) {
                 $hasServer = true;
@@ -261,5 +261,22 @@ final class FeatureContext implements Context
         if(is_file($file))
             unlink($file); // delete file
         }
+    }
+
+    /**
+     * @Given the media folder is unwritable
+     */
+    public function theMediaFolderIsUnwritable()
+    {
+        chmod("public/media", 0444);
+    }
+
+    /**
+     * @Given the media folder is writable
+     */
+    public function theMediaFolderIsWritable()
+    {
+        chmod("public/media", 0766);
+        print_r("Warning: if it not works. Please run sudo public/media 0744 to set the writable works again.");
     }
 }

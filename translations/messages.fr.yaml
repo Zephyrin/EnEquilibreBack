@@ -1,5 +1,14 @@
 error: Erreur.
 
+image:
+  failed:
+    base64:
+      decode:
+        failed: Erreur lors du décodage du base64.
+      uri: Ce n'est pas une image en base64.
+    type: Ce type d'image n'est pas supporté. Les formtas supportés sont le jpg, jpeg, png ou svg. 
+    save: Impossible de sauvegarder l'image.
+
 invalid:
   credentials: Les informations d'identification sont invalides.
 

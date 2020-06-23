@@ -138,7 +138,12 @@ class MediaObjectController extends AbstractFOSRestController
 
         $mediaObject = $form->getData();
         $this->translate($mediaObject, $this->description, $this->entityManager);
-        $mediaObject->setFilePath($this->manageImage($data, $this->translator));
+        try
+        {
+            $mediaObject->setFilePath($this->manageImage($data, $this->translator));
+        } catch(Exception $e) {
+            return $this->formatErrorManageImage($data, $e, $this->translator);
+        }
         $this->entityManager->persist($mediaObject);
         $this->entityManager->flush();
         return  $this->view(

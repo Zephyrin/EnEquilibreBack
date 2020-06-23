@@ -3,6 +3,7 @@
 namespace App\Controller\Helpers;
 
 use App\Entity\MediaObject;
+use ErrorException;
 use Exception;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -23,26 +24,24 @@ trait MediaObjectHelperController
      */
     public function manageImage(array $data, TranslatorInterface $translator, $filename = null)
     {
-        if (!(isset($data['image']) || isset($data['img']))) { return $filename; }
-        $img64 = null; 
-        if(isset($data['image'])) { $img64 = $data['image']; }
-        if(isset($data['img'])) { $img64 = $data['img']; } 
+        if (!isset($data['image'])) { return $filename; }
+        $img64 = $data['image'];
         if ($img64) {
             if (preg_match('/^data:image\/(\w+)\+?\w*;base64,/', $img64, $type)) {
                 $img64 = substr($img64, strpos($img64, ',') + 1);
                 $type = strtolower($type[1]); // jpg, png, gif
 
                 if (!in_array($type, ['jpg', 'jpeg', 'gif', 'png', 'svg'])) {
-                    throw new Exception($translator->trans('invalid.image.type.'));
+                    throw new Exception('image.failed.type');
                 }
 
                 $img = base64_decode($img64);
 
-                if ($img === false) {
-                    throw new Exception($translator->trans('base64_decode failed'));
+                if ($img === false || $img === "") {
+                    throw new Exception('image.failed.base64.decode.failed');
                 }
             } else {
-                throw new Exception($translator->trans('did not match data URI with image data'));
+                throw new Exception('image.failed.base64.uri');
             }
             $oldFilename = null;
             if (!$filename) {
@@ -64,7 +63,9 @@ trait MediaObjectHelperController
                     $img
                 );
             } catch (FileException $e) {
-                throw new Exception($translator->trans('cannot save image data to file'));
+                throw new Exception('image.failed.save');
+            } catch (ErrorException $e) {
+                throw new Exception('image.failed.save');
             }
 
             if ($oldFilename) {
