@@ -49,13 +49,22 @@ class MediaObject implements Translatable
     private $description;
 
     /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     * @ORM\JoinColumn(name="created_by", referencedColumnName="id")
+     * @SWG\Property(description="The user creator")
+     * @SerializedName("createdBy")
+     */
+    private $createdBy;
+
+    /**
      * @Gedmo\Locale
      * Used locale to override Translation listener`s locale
      * this is not a mapped field of entity metadata, just a simple property
      */
     private $locale;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->filePath = "";
     }
 
@@ -74,7 +83,7 @@ class MediaObject implements Translatable
         $this->description = $description;
 
         return $this;
-    } 
+    }
 
     public function getFilePath(): ?string
     {
@@ -91,5 +100,17 @@ class MediaObject implements Translatable
     public function setTranslatableLocale($locale)
     {
         $this->locale = $locale;
+    }
+
+    public function getCreatedBy(): ?User
+    {
+        return $this->createdBy;
+    }
+
+    public function setCreatedBy(?User $createdBy): self
+    {
+        $this->createdBy = $createdBy;
+
+        return $this;
     }
 }

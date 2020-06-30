@@ -71,7 +71,7 @@ Feature: Register an user using french language
         {
             "username": "user",
             "password": "u",
-            "email": "user@en_equilibre.com"
+            "email": "user@way_b.com"
         }
         """
         When I request "api/fr/auth/register" using HTTP POST
@@ -105,7 +105,7 @@ Feature: Register an user using french language
         {
             "username": "user_new2",
             "password": "bépoèdjzwauiectsrnmçàyxkqgbépoèdjzwauiectsrnmçàyxkqgbépoèdjzwauieei",
-            "email": "user_new2@en_equilibre.com"
+            "email": "user_new2@way_b.com"
         }
         """
         When I request "api/fr/auth/register" using HTTP POST
@@ -137,7 +137,7 @@ Feature: Register an user using french language
         {
             "username": "user_new2user_new2user_new2user_new2user_new2user_new2user_new2user_new2",
             "password": "bépoèdjzwauiectsrnmçàyxkqgbépoèdjzwauiectsrnmçàyxkqgbépoèdjzwauieei",
-            "email": "user_new2@en_equilibre.comuser_new2@en_equilibre.comuser_new2@en_equilibre.com"
+            "email": "user_new2@way_b.comuser_new2@way_b.comuser_new2@way_b.comuser_new2@way_b.com"
         }
         """
         When I request "api/fr/auth/register" using HTTP POST

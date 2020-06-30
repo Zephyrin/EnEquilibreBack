@@ -16,19 +16,30 @@ Feature: Test MediaObject with french result.
     {
       "id": 1,
       "description": "Logo Katadyn",
-      "filePath": "@regExp(/.+\\.png/)"
+      "filePath": "@regExp(/.+\\.png/)",
+      "createdBy": {
+            "id": "@regExp(/[0-9]+/)",
+            "username": "@regExp(/.*/)",
+            "roles": [
+                "@regExp(/(ROLE_USER|ROLE_ADMIN|ROLE_SUPERADMIN)/)"
+            ],
+            "email": "@regExp(/.*@.*/)",
+            "lastLogin": "@regExp(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.*/)",
+            "created": "@regExp(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.*/)"
+        }
     }
     """
-    And the response body has 3 fields
+    And the response body has 4 fields
 
   Scenario: Cannot get a single MediaObject if I am not connected - GET
     Given I request "/api/fr/mediaobject/1" using HTTP GET
-    Then the response code is 401
+    Then the response code is 200
     And the response body contains JSON:
     """
     {
-      "status": 401,
-      "message": "Tu n'es pas connecté."
+      "id": 1,
+      "description": "Logo Katadyn",
+      "filePath": "@regExp(/.+\\.png/)"
     }
     """
 
@@ -154,10 +165,20 @@ Feature: Test MediaObject with french result.
     """
     {
       "id": 1,
-      "filePath": "@regExp(/.+\\.png/)"
+      "filePath": "@regExp(/.+\\.png/)",
+      "createdBy": {
+            "id": "@regExp(/[0-9]+/)",
+            "username": "@regExp(/.*/)",
+            "roles": [
+                "@regExp(/(ROLE_USER|ROLE_ADMIN|ROLE_SUPERADMIN)/)"
+            ],
+            "email": "@regExp(/.*@.*/)",
+            "lastLogin": "@regExp(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.*/)",
+            "created": "@regExp(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.*/)"
+        }
     }
     """
-    And the response body has 2 fields
+    And the response body has 3 fields
 
   
   Scenario: Can delete an MediaObject

@@ -39,10 +39,10 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function findUserByUsernameOrEmail(string $username)
     {
         return $this->createQueryBuilder('u')
-            ->andWhere('u.username = :val OR u.email = :val')
+            ->andWhere('u.username = :val OR u.email = :val or u.id = :val')
             ->setParameter('val', $username)
             ->orderBy('u.id', 'ASC')
-            ->setMaxResults(10)
+            ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
     }

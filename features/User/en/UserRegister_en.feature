@@ -71,7 +71,7 @@ Feature: Register an user using english language
         {
             "username": "user",
             "password": "u",
-            "email": "user@en_equilibre.com"
+            "email": "user@way_b.com"
         }
         """
         When I request "api/en/auth/register" using HTTP POST
@@ -105,7 +105,7 @@ Feature: Register an user using english language
         {
             "username": "user_new2",
             "password": "bépoèdjzwauiectsrnmçàyxkqgbépoèdjzwauiectsrnmçàyxkqgbépoèdjzwauieei",
-            "email": "user_new2@en_equilibre.com"
+            "email": "user_new2@way_b.com"
         }
         """
         When I request "api/en/auth/register" using HTTP POST

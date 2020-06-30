@@ -9,6 +9,7 @@ use Symfony\Component\Validator\Constraints as Asset;
 use JMS\Serializer\Annotation\SerializedName;
 use Swagger\Annotations as SWG;
 use DateTime;
+use JMS\Serializer\Annotation\Exclude;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
@@ -23,7 +24,7 @@ class User implements UserInterface
      */
     private $id;
 
-     /**
+    /**
      * @ORM\Column(type="string", length=64, unique=true)
      * @Asset\NotBlank()
      */
@@ -43,6 +44,7 @@ class User implements UserInterface
     /**
      * @var string The hashed password
      * @ORM\Column(type="string")
+     * @Exclude
      * @Asset\NotBlank()
      * @Asset\Length(
      *  min=6,

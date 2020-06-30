@@ -1,3 +1,13 @@
+access:
+  denied: Not authorized.
+
+home:
+  already:
+    exists: There is already an home page.
+
+conflict:
+  error: Conflict error.
+
 error: Error.
 
 image:

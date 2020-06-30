@@ -25,13 +25,13 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class MediaObjectController
- * @package App\Controller
+ *
  * @Route("/api")
  * @SWG\Tag(
  *     name="MediaObject"
  * )
  */
-class MediaObjectController extends AbstractFOSRestController 
+class MediaObjectController extends AbstractFOSRestController
 {
     use TranslatableHelperController;
 
@@ -61,14 +61,13 @@ class MediaObjectController extends AbstractFOSRestController
     /**
      * The field name use for translation.
      */
-    private string $description = "description"; 
+    private string $description = "description";
 
     public function __construct(
         EntityManagerInterface $entityManager,
         MediaObjectRepository $mediaObjectRepository,
         FormErrorSerializer $formErrorSerializer,
         TranslatorInterface $translator
-
     ) {
         $this->entityManager = $entityManager;
         $this->mediaObjectRepository = $mediaObjectRepository;
@@ -124,24 +123,34 @@ class MediaObjectController extends AbstractFOSRestController
     public function postAction(Request $request)
     {
         $data = $this->getDataFromJson($request, true, $this->translator);
-        if($data instanceof JsonResponse) 
+        if ($data instanceof JsonResponse)
             return $data;
-        $this->setLang($data, $this->description);
+        return $this->post($data);
+    }
+
+    public function post($data)
+    {
         $form = $this->createForm(
             MediaObjectType::class,
             new MediaObject()
         );
+        if (is_array($data)) {
+            $this->setLang($data, $this->description);
+        } else {
+            return $this->createError($form, $this, $this->translator, "invalid.json");
+        }
+
         $form = $form->submit($data, false);
         $validation = $this->validationError($form, $this, $this->translator);
-        if($validation instanceof JsonResponse)
+        if ($validation instanceof JsonResponse)
             return $validation;
 
         $mediaObject = $form->getData();
+        $mediaObject->setCreatedBy($this->getUser());
         $this->translate($mediaObject, $this->description, $this->entityManager);
-        try
-        {
+        try {
             $mediaObject->setFilePath($this->manageImage($data, $this->translator));
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             return $this->formatErrorManageImage($data, $e, $this->translator);
         }
         $this->entityManager->persist($mediaObject);
@@ -282,7 +291,7 @@ class MediaObjectController extends AbstractFOSRestController
      */
     public function putAction(Request $request, string $id)
     {
-        return $this->putOrPatch($request, $id, true);
+        return $this->putOrPatch($this->getDataFromJson($request, true, $this->translator), $id, true);
     }
 
     /**
@@ -339,7 +348,7 @@ class MediaObjectController extends AbstractFOSRestController
      */
     public function patchAction(Request $request, string $id)
     {
-        return $this->putOrPatch($request, $id, false);
+        return $this->putOrPatch($this->getDataFromJson($request, true, $this->translator), $id, false);
     }
 
     /**
@@ -365,6 +374,11 @@ class MediaObjectController extends AbstractFOSRestController
      *     response=404,
      *     description="The MediaObject based on ID is not found."
      * )
+     * 
+     * @SWG\Response(
+     *      response=403,
+     *      description="You are not authorizel to delete this MediaObject"
+     * )
 
      * @SWG\Parameter(
      *     name="id",
@@ -373,12 +387,15 @@ class MediaObjectController extends AbstractFOSRestController
      *     description="The ID used to find the MediaObject."
      * )
      * @param string $id
-     * @param Request $request
+     * @throws Exception
      * @return View
      */
-    public function deleteAction(Request $request, string $id)
+    public function deleteAction(string $id)
     {
         $mediaObject = $this->findMediaObjectById($id);
+        if ($mediaObject->getCreatedBy()->getId() !== $this->getUser()->getId()) {
+            $this->denyAccessUnlessGranted("ROLE_MERCHANT");
+        }
         unlink($this->getParameter('media_object') . "/" . $mediaObject->getFilePath());
         $this->entityManager->remove($mediaObject);
         $this->entityManager->flush();
@@ -402,36 +419,36 @@ class MediaObjectController extends AbstractFOSRestController
     }
 
     /**
-     * @param Request $request
+     * @param array $request
      * @param string $id
      * @param bool $clearMissing
      * @return View|JsonResponse
      * @throws ExceptionInterface
      * @throws Exception
      */
-    private function putOrPatch(Request $request, string $id, bool $clearMissing)
+    public function putOrPatch(array $data, string $id, bool $clearMissing)
     {
         $existingMediaObjectField = $this->findMediaObjectById($id);
         $form = $this->createForm(MediaObjectType::class, $existingMediaObjectField);
-        $data = $this->getDataFromJson($request, true, $this->translator);
-        if($data instanceof JsonResponse) 
+        if ($data instanceof JsonResponse)
             return $data;
         $this->setLang($data, $this->description);
         $form->submit($data, $clearMissing);
         $validation = $this->validationError($form, $this, $this->translator);
-        if($validation instanceof JsonResponse)
+        if ($validation instanceof JsonResponse)
             return $validation;
         $mediaObject = $form->getData();
         $this->translate($mediaObject, $this->description, $this->entityManager, $clearMissing);
         $mediaObject->setFilePath(
-            $this->manageImage($data,
-                               $this->translator,
-                               $mediaObject->getFilePath()));
+            $this->manageImage(
+                $data,
+                $this->translator,
+                $mediaObject->getFilePath()
+            )
+        );
 
         $this->entityManager->flush();
 
         return $this->view(null, Response::HTTP_NO_CONTENT);
     }
-
-
 }
