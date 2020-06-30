@@ -25,6 +25,7 @@ class Home
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue
      * @ORM\Id
+     * @Exclude()
      */
     private $id;
     /**
@@ -40,6 +41,11 @@ class Home
      * @ORM\ManyToOne(targetEntity="App\Entity\MediaObject")
      */
     private $separator;
+
+    /**
+     * @var array|null
+     */
+    private $translations;
 
     public function __construct()
     {
@@ -71,6 +77,17 @@ class Home
     {
         $this->separator = $separator;
 
+        return $this;
+    }
+
+    public function getTranslations(): ?array
+    {
+        return $this->translations;
+    }
+
+    public function setTranslations(?array $translations): self
+    {
+        $this->translations = $translations;
         return $this;
     }
 }

@@ -27,7 +27,6 @@ Feature: Test Brand JSON API endpoint
         And the response body contains JSON:
         """
         {
-            "id": "@regExp(/[0-9]+/)",
             "background": {
                 "id": "@regExp(/[0-9]+/)",
                 "description": "Home page background",
@@ -46,7 +45,7 @@ Feature: Test Brand JSON API endpoint
             }
         }
         """
-        And the response body has 3 fields
+        And the response body has 2 fields
         Given I am login as admin
         When I request "/api/en/home" using HTTP DELETE
         Then the response code is 204
@@ -196,7 +195,6 @@ Feature: Test Brand JSON API endpoint
         And the response body contains JSON:
         """
         {
-            "id": "@regExp(/[0-9]+/)",
             "background": {
                 "id": "@regExp(/.*/)",
                 "filePath": "@regExp(/.+/)",
@@ -240,7 +238,6 @@ Feature: Test Brand JSON API endpoint
         And the response body contains JSON:
         """
         {
-            "id": "@regExp(/[0-9]+/)",
             "background": {
                 "id": "@regExp(/.*/)",
                 "filePath": "@regExp(/.+/)",
@@ -291,7 +288,6 @@ Feature: Test Brand JSON API endpoint
         And the response body contains JSON:
         """
         {
-            "id": "@regExp(/[0-9]+/)",
             "background": {
                 "id": "@regExp(/.*/)",
                 "filePath": "@regExp(/.+/)",
@@ -307,5 +303,63 @@ Feature: Test Brand JSON API endpoint
         Given I am login as admin
         When I request "/api/en/home" using HTTP DELETE
         Then the response code is 204
+    
+    Scenario: I can create an home page if I am connected as merchant with only background
+        Given I am login as merchant
+        Then the request body is:
+        """
+        {
+            "background": {
+                "description": {"en": "Home page background", "fr": "Fond d'écran de la page d'acceuil"},
+                "image": "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8-"
+            }
+        }
+        """
+        When I request "/api/en/home" using HTTP POST
+        Then the response code is 201
+        And the response body contains JSON:
+        """
+        {
+            "background": {
+                "id": "@regExp(/.*/)",
+                "filePath": "@regExp(/.+/)",
+                "description": "Home page background"
+            }
+        }
+        """
+        And the response body has 1 fields
+        Given I am login as admin
+        When I request "/api/en/home" using HTTP DELETE
+        Then the response code is 204
+    
+    Scenario: I can create an home page if I am connected as merchant with only separator
+        Given I am login as merchant
+        Then the request body is:
+        """
+        {
+            "separator": {
+                "description": {"en": "Home page separator", "fr": "Séparateur de la page d'acceuil"},
+                "image": "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8-"
+            }
+        }
+        """
+        When I request "/api/en/home" using HTTP POST
+        Then the response code is 201
+        And the response body contains JSON:
+        """
+        {
+            "separator": {
+                "id": "@regExp(/.*/)",
+                "filePath": "@regExp(/.+/)",
+                "description": "Home page separator"
+            }
+        }
+        """
+        And the response body has 1 fields
+        Given I am login as admin
+        When I request "/api/en/home" using HTTP DELETE
+        Then the response code is 204
+
+
 
     

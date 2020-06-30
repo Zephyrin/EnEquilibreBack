@@ -6,6 +6,7 @@ use App\Entity\Home;
 use App\Form\HomeType;
 use App\Repository\HomeRepository;
 use App\Controller\Helpers\HelperController;
+use App\Controller\Helpers\TranslatableHelperController;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
 use FOS\RestBundle\Controller\Annotations as Rest;
@@ -38,6 +39,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class HomeController extends AbstractFOSRestController
 {
     use HelperController;
+
+    use TranslatableHelperController;
     /**
      * @var EntityManagerInterface
      */
@@ -207,6 +210,55 @@ class HomeController extends AbstractFOSRestController
     }
 
     /**
+     * Expose the Home page information with all languages for merchant/admin edition.
+     *
+     * @Route("/home",
+     *  name="api_home_merchant_get",
+     *  methods={"GET"})
+     * 
+     * @SWG\Get(
+     *     summary="Get the Home page",
+     *     produces={"application/json"}
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Return the Home page",
+     *     @SWG\Schema(ref=@Model(type=Home::class))
+     * )
+     *
+     * @SWG\Response(
+     *     response=404,
+     *     description="The Home page does not exists yet"
+     * )
+     *
+     * @return View
+     */
+    public function getActionMerchant()
+    {
+        $this->denyAccessUnlessGranted("ROLE_MERCHANT");
+
+        $home = $this->getHome();
+        if ($home instanceof JsonResponse)
+            return $home;
+        $repository = $this->entityManager->getRepository('Gedmo\Translatable\Entity\Translation');
+
+        $array = $this->createTranslatableArray();
+        $this->addTranslatableVar(
+            $array,
+            $repository->findTranslations($home->getBackground()),
+            $this->background
+        );
+        $this->addTranslatableVar(
+            $array,
+            $repository->findTranslations($home->getSeparator()),
+            $this->separator
+        );
+        $home->setTranslations($array);
+
+        return $this->view($home);
+    }
+
+    /**
      * Update a Home page.
      * 
      * @Route("/{_locale}/home",
@@ -246,12 +298,11 @@ class HomeController extends AbstractFOSRestController
      * )
      *
      * @param Request $request
-     * @param string $id of the Home to update
      * @return View|JsonResponse
      */
-    public function putAction(Request $request, string $id)
+    public function putAction(Request $request)
     {
-        return $this->putOrPatch($request, $id, true);
+        return $this->putOrPatch($request, true);
     }
 
     /**
