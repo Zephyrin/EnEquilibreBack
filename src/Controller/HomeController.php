@@ -243,16 +243,18 @@ class HomeController extends AbstractFOSRestController
         $repository = $this->entityManager->getRepository('Gedmo\Translatable\Entity\Translation');
 
         $array = $this->createTranslatableArray();
-        $this->addTranslatableVar(
-            $array,
-            $repository->findTranslations($home->getBackground()),
-            $this->background
-        );
-        $this->addTranslatableVar(
-            $array,
-            $repository->findTranslations($home->getSeparator()),
-            $this->separator
-        );
+        if ($home->getBackground() != null)
+            $this->addTranslatableVar(
+                $array,
+                $repository->findTranslations($home->getBackground()),
+                $this->background
+            );
+        if ($home->getSeparator() != null)
+            $this->addTranslatableVar(
+                $array,
+                $repository->findTranslations($home->getSeparator()),
+                $this->separator
+            );
         $home->setTranslations($array);
 
         return $this->view($home);
