@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
@@ -17,6 +18,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
  */
 class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
+    use AbstractRepository;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, User::class);
@@ -47,32 +50,33 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getOneOrNullResult();
     }
 
-    // /**
-    //  * @return User[] Returns an array of User objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('u.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
+    public function findByParams(
+        int $page,
+        int $limit,
+        string $sort,
+        string $sortBy,
+        ?string $search
+    ) {
+        $query = $this->createQueryBuilder('e');
+        $query = $this->search($query, $search);
+        return $this->resultCount(
+            $query,
+            $page,
+            $limit,
+            false,
+            $sort,
+            $sortBy,
+            null,
+            null
+        );
     }
-    */
 
-    /*
-    public function findOneBySomeField($value): ?User
+    private function search(QueryBuilder $query, ?string $search)
     {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+        if ($search != null) {
+            $query = $query->andWhere('(LOWER(e.username) LIKE :search OR LOWER(e.email) LIKE :search)')
+                ->setParameter('search', '%' . addcslashes(strtolower($search), '%_') . '%');
+        }
+        return $query;
     }
-    */
 }
