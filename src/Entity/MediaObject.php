@@ -63,6 +63,11 @@ class MediaObject implements Translatable
      */
     private $locale;
 
+    /**
+     * @var array|null
+     */
+    private $translations;
+
     public function __construct()
     {
         $this->filePath = "";
@@ -111,6 +116,17 @@ class MediaObject implements Translatable
     {
         $this->createdBy = $createdBy;
 
+        return $this;
+    }
+
+    public function getTranslations(): ?array
+    {
+        return $this->translations;
+    }
+
+    public function setTranslations(?array $translations): self
+    {
+        $this->translations = $translations;
         return $this;
     }
 }

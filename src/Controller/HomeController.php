@@ -66,6 +66,9 @@ class HomeController extends AbstractFOSRestController
 
     private $id = "id";
 
+    private $title = "title";
+    private $subtitle = "subtitle";
+
     public function __construct(
         EntityManagerInterface $entityManager,
         HomeRepository $homeRepository,
@@ -136,8 +139,11 @@ class HomeController extends AbstractFOSRestController
             // Ok, this is what we need to create a new home page.
         }
         $data = $this->getDataFromJson($request, true, $this->translator);
+
         if ($data instanceof JsonResponse)
             return $data;
+        $this->setLang($data, $this->title);
+        $this->setLang($data, $this->subtitle);
         $responseSeparator = $this->createOrUpdateMediaObject($data, $this->separator);
         $responseBackground = $this->createOrUpdateMediaObject($data, $this->background);
 
@@ -167,6 +173,8 @@ class HomeController extends AbstractFOSRestController
         }
 
         $insertData = $form->getData();
+        $this->translate($insertData, $this->title, $this->entityManager);
+        $this->translate($insertData, $this->subtitle, $this->entityManager);
 
         $this->entityManager->persist($insertData);
 
@@ -243,6 +251,10 @@ class HomeController extends AbstractFOSRestController
         $repository = $this->entityManager->getRepository('Gedmo\Translatable\Entity\Translation');
 
         $array = $this->createTranslatableArray();
+        $this->addTranslatableVar(
+            $array,
+            $repository->findTranslations($home)
+        );
         if ($home->getBackground() != null)
             $this->addTranslatableVar(
                 $array,
@@ -395,8 +407,11 @@ class HomeController extends AbstractFOSRestController
         if ($data instanceof JSonResponse) {
             return $data;
         }
-        $separator = $existingHome->getSeparator();
-        $background = $existingHome->getBackground();
+
+        $this->setLang($data, $this->title);
+        $this->setLang($data, $this->subtitle);
+        /* $separator = $existingHome->getSeparator();
+        $background = $existingHome->getBackground(); */
         $responseSeparator = $this->createOrUpdateMediaObject($data, $this->separator, $clearData);
         $responseBackground = $this->createOrUpdateMediaObject($data, $this->background, $clearData);
 
@@ -421,8 +436,12 @@ class HomeController extends AbstractFOSRestController
         if ($validation instanceof JsonResponse) {
             return $validation;
         }
+        $insertData = $form->getData();
+        $this->translate($insertData, $this->title, $this->entityManager, $clearData);
+        $this->translate($insertData, $this->subtitle, $this->entityManager, $clearData);
 
-        if (($separator != null
+        /* I keep picture for later use. I get a new interface to delete it if the user really want */
+        /*         if (($separator != null
                 && $existingHome->getSeparator() == null
                 && $clearData)
             || ($separator != null
@@ -449,7 +468,7 @@ class HomeController extends AbstractFOSRestController
             );
             if ($responseDelete->getStatusCode() != 204 && $responseDelete->getStatusCode() != 404)
                 return $responseDelete;
-        }
+        } */
         $this->entityManager->flush();
 
         return $this->view(null, Response::HTTP_NO_CONTENT);
@@ -490,7 +509,8 @@ class HomeController extends AbstractFOSRestController
 
         $this->entityManager->remove($home);
         $this->entityManager->flush();
-        if ($home->getSeparator() != null) {
+        /* I keep picture for later use. Never know if the user want it. */
+        /* if ($home->getSeparator() != null) {
             $responseDelete =  $this->forward(
                 "App\Controller\MediaObjectController::deleteAction",
                 ['id' => $home->getSeparator()->getId()]
@@ -505,7 +525,7 @@ class HomeController extends AbstractFOSRestController
             );
             if ($responseDelete->getStatusCode() != 204 && $responseDelete->getStatusCode() != 404)
                 return $responseDelete;
-        }
+        } */
         return $this->view(
             null,
             Response::HTTP_NO_CONTENT

@@ -15,7 +15,9 @@ Feature: Test Brand JSON API endpoint GET
             "separator": {
                 "description": {"en": "Home page separator", "fr": "Séparateur de la page d'acceuil"},
                 "image": "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8-"
-            }
+            }, 
+            "title": { "en": "English title", "fr": "Titre en français" },
+            "subtitle": { "en": "English subtitle", "fr": "Sous titre en français" }
         }
         """
         When I request "/api/en/home" using HTTP POST
@@ -25,6 +27,7 @@ Feature: Test Brand JSON API endpoint GET
         Then the response body contains JSON:
         """
         {
+            "id": "@regExp(/[0-9]+/)",
             "background": {
                 "id": "@regExp(/[0-9]+/)",
                 "description": "Home page background",
@@ -40,14 +43,16 @@ Feature: Test Brand JSON API endpoint GET
                 "createdBy": {
                     "id": "@regExp(/[0-9]+/)"
                 }
-            }
+            },
+            "title": "English title",
+            "subtitle": "English subtitle"
         }
         """
-        And the response body has 2 fields
+        And the response body has 5 fields
         Given I request "/api/en/mediaobjects" using HTTP GET
         Then the response body is a JSON array of length 2
         Given I am login as admin
         When I request "/api/en/home" using HTTP DELETE
         Then the response code is 204
         Given I request "/api/en/mediaobjects" using HTTP GET
-        Then the response body is a JSON array of length 0
+        Then the response body is a JSON array of length 2

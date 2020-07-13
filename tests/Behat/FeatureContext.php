@@ -138,7 +138,7 @@ final class FeatureContext implements Context
         $this->apiContext->setRequestBody(
             "{\"roles\": [\"ROLE_ADMIN\"]}"
         );
-        $this->apiContext->requestPath("/api/en/user/2", 'PATCH');
+        $this->apiContext->requestPath("/api/en/user/admin", 'PATCH');
         $this->iLogout();
         $this->createUser("merchant", "merchant_merchant", "merchant@en_equilibre.com");
         $this->iLogout();
@@ -146,7 +146,7 @@ final class FeatureContext implements Context
         $this->apiContext->setRequestBody(
             "{\"roles\": [\"ROLE_MERCHANT\"]}"
         );
-        $this->apiContext->requestPath("/api/en/user/3", 'PATCH');
+        $this->apiContext->requestPath("/api/en/user/merchant", 'PATCH');
         $this->iLogout();
         $this->createUser("user", "user_user", "user@way_b.com");
         $this->iLogout();

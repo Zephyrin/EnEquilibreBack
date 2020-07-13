@@ -149,8 +149,7 @@ class UserController extends AbstractFOSRestController
      *  name="api_user_patch",
      *  methods={"PATCH"},
      *  requirements={
-     *      "_locale": "en|fr",
-     *      "id": "\d"
+     *      "_locale": "en|fr"
      * })
      *
      * @SWG\Patch(
@@ -236,34 +235,33 @@ class UserController extends AbstractFOSRestController
     /**
      * Expose user.
      *  
-     * @Route("/{_locale}/user/{id}",
+     * @Route("/{_locale}/user/{username}",
      *  name="api_user_get",
      *  methods={"GET"},
      *  requirements={
-     *      "_locale": "en|fr",
-     *      "id": "\d"
+     *      "_locale": "en|fr"
      * })
      *
      * @SWG\Get(
-     *     summary="Get the user based on its ID, username or email.",
+     *     summary="Get the user based on its username or email.",
      *     produces={"application/json"}
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Return the User Entity based on ID, username or email.",
+     *     description="Return the User Entity based on username or email.",
      *     @SWG\Schema(ref=@Model(type=User::class))
      * )
      *
      * @SWG\Response(
      *     response=404,
-     *     description="The User based on ID, username or email does not exists."
+     *     description="The User based on username or email does not exists."
      * )
      *
      * @SWG\Parameter(
      *     name="id",
      *     in="path",
      *     type="string",
-     *     description="The ID or Username Or Email used to find the information about User."
+     *     description="The Username Or Email used to find the information about User."
      * )
      * @param string username
      * 

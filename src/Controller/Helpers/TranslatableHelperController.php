@@ -17,8 +17,9 @@ trait TranslatableHelperController
         if (isset($data[$field])) {
             $supported = $this->getParameter('app.supported_locales');
             foreach ($supported as $locale) {
-                if (isset($data[$field][$locale]))
+                if (isset($data[$field][$locale])) {
                     $this->langs[$field][$locale] = $data[$field][$locale];
+                }
             }
             unset($data[$field]);
             if (isset($this->langs[$field]) && isset($this->langs[$field]['en'])) {
@@ -57,15 +58,24 @@ trait TranslatableHelperController
         return $array;
     }
 
-    public function addTranslatableVar(array &$array, array $translate, string $name)
+    public function addTranslatableVar(array &$array, array $translate, ?string $name = null)
     {
         $supported = $this->getParameter('app.supported_locales');
         foreach ($supported as $locale) {
-            if (!isset($array[$locale][$name])) {
+            if (!isset($array[$locale])) {
+                $array[$locale] = [];
+            }
+            if ($name != null && !isset($array[$locale][$name])) {
                 $array[$locale][$name] = [];
             }
-            foreach ($translate[$locale] as $key => $value) {
-                $array[$locale][$name][$key] = $value;
+            if (isset($translate[$locale])) {
+                foreach ($translate[$locale] as $key => $value) {
+                    if ($name != null) {
+                        $array[$locale][$name][$key] = $value;
+                    } else {
+                        $array[$locale][$key] = $value;
+                    }
+                }
             }
         }
     }

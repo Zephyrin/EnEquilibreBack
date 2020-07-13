@@ -15,7 +15,9 @@ Feature: Test Brand JSON API endpoint GET
             "separator": {
                 "description": {"en": "Home page separator", "fr": "Séparateur de la page d'acceuil"},
                 "image": "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8-"
-            }
+            }, 
+            "title": { "en": "English title", "fr": "Titre en français" },
+            "subtitle": { "en": "English subtitle", "fr": "Sous titre en français" }
         }
         """
         When I request "/api/en/home" using HTTP POST
@@ -31,6 +33,7 @@ Feature: Test Brand JSON API endpoint GET
         Then the response body contains JSON:
         """
         {
+            "id": "@regExp(/[0-9]+/)",
             "background": {
                 "id": "@regExp(/[0-9]+/)",
                 "description": "Home page background",
@@ -47,26 +50,32 @@ Feature: Test Brand JSON API endpoint GET
                     "id": "@regExp(/[0-9]+/)"
                 }
             },
+            "title": "English title",
+            "subtitle": "English subtitle",
             "translations": {
                 "en": {
                     "background": { "description": "Home page background" },
-                    "separator": { "description": "Home page separator" }
+                    "separator": { "description": "Home page separator" },
+                    "title": "English title",
+                    "subtitle": "English subtitle"
                 },
                 "fr": {
                     "background": {"description": "Fond d'écran de la page d'acceuil"},
                     "separator": {"description": "Séparateur de la page d'acceuil" }
+                    "title": "Titre en français",
+                    "subtitle": "Sous titre en français"
                 }
             }
         }
         """
-        And the response body has 3 fields
+        And the response body has 4 fields
         Given I request "/api/en/mediaobjects" using HTTP GET
         Then the response body is a JSON array of length 2
         Given I am login as admin
         When I request "/api/en/home" using HTTP DELETE
         Then the response code is 204
         Given I request "/api/en/mediaobjects" using HTTP GET
-        Then the response body is a JSON array of length 0
+        Then the response body is a JSON array of length 2
 
     Scenario: I get the home page with only the background
         Given I am login as merchant
@@ -92,6 +101,7 @@ Feature: Test Brand JSON API endpoint GET
         Then the response body contains JSON:
         """
         {
+            "id": "@regExp(/[0-9]+/)",
             "background": {
                 "id": "@regExp(/[0-9]+/)",
                 "description": "Home page background",
@@ -110,14 +120,14 @@ Feature: Test Brand JSON API endpoint GET
             }
         }
         """
-        And the response body has 2 fields
+        And the response body has 3 fields
         Given I request "/api/en/mediaobjects" using HTTP GET
         Then the response body is a JSON array of length 1
         Given I am login as admin
         When I request "/api/en/home" using HTTP DELETE
         Then the response code is 204
         Given I request "/api/en/mediaobjects" using HTTP GET
-        Then the response body is a JSON array of length 0
+        Then the response body is a JSON array of length 1
 
     Scenario: I get the separator only information.
         Given I am login as merchant
@@ -143,6 +153,7 @@ Feature: Test Brand JSON API endpoint GET
         Then the response body contains JSON:
         """
         {
+            "id": "@regExp(/[0-9]+/)",
             "separator": {
                 "id": "@regExp(/[0-9]+/)",
                 "description": "Home page separator",
@@ -161,11 +172,11 @@ Feature: Test Brand JSON API endpoint GET
             }
         }
         """
-        And the response body has 2 fields
+        And the response body has 3 fields
         Given I request "/api/en/mediaobjects" using HTTP GET
         Then the response body is a JSON array of length 1
         Given I am login as admin
         When I request "/api/en/home" using HTTP DELETE
         Then the response code is 204
         Given I request "/api/en/mediaobjects" using HTTP GET
-        Then the response body is a JSON array of length 0
+        Then the response body is a JSON array of length 1

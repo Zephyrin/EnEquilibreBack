@@ -11,10 +11,12 @@ use Symfony\Component\Validator\Constraints\File;
 
 class MediaObjectType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder,
-                              array $options)
-    {
+    public function buildForm(
+        FormBuilderInterface $builder,
+        array $options
+    ) {
         $builder
+            ->add('id')
             ->add('description')
             ->add('image', FileType::class, [
                 'label' => 'Image (png/ico/jpg/jpeg file)',

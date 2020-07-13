@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\MediaObject;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use FOS\RestBundle\Request\ParamFetcher;
 
 /**
  * @method MediaObject|null find($id, $lockMode = null, $lockVersion = null)
@@ -14,11 +15,26 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class MediaObjectRepository extends ServiceEntityRepository
 {
+    use AbstractRepository;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, MediaObject::class);
     }
 
+    public function findAllPagination(ParamFetcher $paramFetcher)
+    {
+        $page = $paramFetcher->get('page');
+        $limit = $paramFetcher->get('limit');
+        $sort = $paramFetcher->get('sort');
+        $sortBy = $paramFetcher->get('sortBy');
+        $search = $paramFetcher->get('search');
+        $query = $this->createQueryBuilder('e');
+        if ($search != null)
+            $query = $query->andWhere('LOWER(e.filePath) LIKE :search')
+                ->setParameter('search', "%" . addcslashes(strtolower($search), '%_') . '%');
+        return $this->resultCount($query, $page, $limit, false, $sort, $sortBy);
+    }
     // /**
     //  * @return MediaObject[] Returns an array of MediaObject objects
     //  */

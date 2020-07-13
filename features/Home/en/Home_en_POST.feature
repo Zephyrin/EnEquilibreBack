@@ -27,6 +27,7 @@ Feature: Test Brand JSON API endpoint
         And the response body contains JSON:
         """
         {
+            "id": "@regExp(/[0-9]+/)",
             "background": {
                 "id": "@regExp(/[0-9]+/)",
                 "description": "Home page background",
@@ -45,7 +46,7 @@ Feature: Test Brand JSON API endpoint
             }
         }
         """
-        And the response body has 2 fields
+        And the response body has 3 fields
         Given I am login as admin
         When I request "/api/en/home" using HTTP DELETE
         Then the response code is 204

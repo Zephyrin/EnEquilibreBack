@@ -10,6 +10,7 @@ use App\Controller\Helpers\MediaObjectHelperController;
 use App\Controller\Helpers\TranslatableHelperController;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Serializer\FormErrorSerializer;
+use ErrorException;
 use Exception;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\View\View;
@@ -22,6 +23,8 @@ use Nelmio\ApiDocBundle\Annotation\Model;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use FOS\RestBundle\Request\ParamFetcher;
+use FOS\RestBundle\Controller\Annotations\QueryParam;
 
 /**
  * Class MediaObjectController
@@ -36,6 +39,7 @@ class MediaObjectController extends AbstractFOSRestController
     use TranslatableHelperController;
 
     use HelperController;
+
     /**
      * Helper to save the image into a folder.
      */
@@ -169,7 +173,7 @@ class MediaObjectController extends AbstractFOSRestController
      *  methods={"GET"},
      *  requirements={
      *      "_locale": "en|fr",
-     *      "id": "\d"
+     *      "id": "\d+"
      * })
      *
      * @SWG\Get(
@@ -227,15 +231,95 @@ class MediaObjectController extends AbstractFOSRestController
      *      @SWG\Items(ref=@Model(type=MediaObject::class))
      *     )
      * )
+     * 
+     * @QueryParam(name="page"
+     * , requirements="\d+"
+     * , default="1"
+     * , description="Page of the overview.")
+     * @QueryParam(name="limit"
+     * , requirements="\d+"
+     * , default="10"
+     * , description="Item count limit")
+     * @QueryParam(name="sort"
+     * , requirements="(asc|desc)"
+     * , allowBlank=false
+     * , default="asc"
+     * , description="Sort direction")
+     * @QueryParam(name="sortBy"
+     * , requirements="(id|description|filePath)"
+     * , default="id"
+     * , description="Sort by name or uri")
+     * @QueryParam(name="search"
+     * , nullable=true
+     * , description="Search on name or description or sub-category name or category name or brand name or brand description")
      *
-     * @param Request $request
+     * @param ParamFetcher $paramFetcher
      * @return View
      */
-    public function cgetAction(Request $request)
+    public function cgetAction(ParamFetcher $paramFetcher)
     {
-        return $this->view(
-            $this->mediaObjectRepository->findAll()
-        );
+        $mediaObjects = $this->mediaObjectRepository->findAllPagination($paramFetcher);
+        return $this->setPaginateToView($mediaObjects, $this);
+    }
+
+    /**
+     * Expose all MediaObjects and their informations.
+     * 
+     * @Route("/mediaobjects",
+     *  name="api_mediaobject_gets",
+     *  methods={"GET"},
+     * )
+     * 
+     * @SWG\Get(
+     *     summary="Get all MediaObjects",
+     *     produces={"application/json"}
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Return all MediaObjects and their user information.",
+     *     @SWG\Schema(
+     *      type="array",
+     *      @SWG\Items(ref=@Model(type=MediaObject::class))
+     *     )
+     * )
+     * 
+     * @QueryParam(name="page"
+     * , requirements="\d+"
+     * , default="1"
+     * , description="Page of the overview.")
+     * @QueryParam(name="limit"
+     * , requirements="\d+"
+     * , default="10"
+     * , description="Item count limit")
+     * @QueryParam(name="sort"
+     * , requirements="(asc|desc)"
+     * , allowBlank=false
+     * , default="asc"
+     * , description="Sort direction")
+     * @QueryParam(name="sortBy"
+     * , requirements="(id|description|filePath)"
+     * , default="id"
+     * , description="Sort by name or uri")
+     * @QueryParam(name="search"
+     * , nullable=true
+     * , description="Search on name or description or sub-category name or category name or brand name or brand description")
+     *
+     * @param ParamFetcher $paramFetcher
+     * @return View
+     */
+    public function cgetActionMerchant(ParamFetcher $paramFetcher)
+    {
+        $mediaObjects = $this->mediaObjectRepository->findAllPagination($paramFetcher);
+        $repository = $this->entityManager->getRepository('Gedmo\Translatable\Entity\Translation');
+        foreach ($mediaObjects[0] as $mediaObject) {
+            $array = $this->createTranslatableArray();
+            $this->addTranslatableVar(
+                $array,
+                $repository->findTranslations($mediaObject)
+            );
+            $mediaObject->setTranslations($array);
+        }
+        return $this->setPaginateToView($mediaObjects, $this);
     }
 
     /**
@@ -248,7 +332,7 @@ class MediaObjectController extends AbstractFOSRestController
      *  methods={"PUT"},
      *  requirements={
      *      "_locale": "en|fr",
-     *      "id": "\d"
+     *      "id": "\d+"
      * })
      * 
      * @SWG\Put(
@@ -302,7 +386,7 @@ class MediaObjectController extends AbstractFOSRestController
      *  methods={"PATCH"},
      *  requirements={
      *      "_locale": "en|fr",
-     *      "id": "\d"
+     *      "id": "\d+"
      * })
      * @SWG\Patch(
      *     consumes={"application/json"},
@@ -359,7 +443,7 @@ class MediaObjectController extends AbstractFOSRestController
      *  methods={"DELETE"},
      *  requirements={
      *      "_locale": "en|fr",
-     *      "id": "\d"
+     *      "id": "\d+"
      * })
      * 
      * @SWG\Delete(
@@ -396,10 +480,12 @@ class MediaObjectController extends AbstractFOSRestController
         if ($mediaObject->getCreatedBy()->getId() !== $this->getUser()->getId()) {
             $this->denyAccessUnlessGranted("ROLE_MERCHANT");
         }
-        unlink($this->getParameter('media_object') . "/" . $mediaObject->getFilePath());
+        $filePath = $this->getParameter('media_object') . "/" . $mediaObject->getFilePath();
+
         $this->entityManager->remove($mediaObject);
         $this->entityManager->flush();
-
+        if (file_exists($filePath))
+            unlink($filePath);
         return $this->view(null, Response::HTTP_NO_CONTENT);
     }
 

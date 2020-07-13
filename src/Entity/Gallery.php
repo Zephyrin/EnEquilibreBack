@@ -14,12 +14,12 @@ use Gedmo\Translatable\Translatable;
 
 /**
  * @SWG\Definition(
- *     description="A Home give a way to present the home page."
+ *     description="A Gallery save jewel with separators and name."
  * )
  *
- * @ORM\Entity(repositoryClass="App\Repository\HomeRepository::class")
+ * @ORM\Entity(repositoryClass="App\Repository\GalleryRepository::class")
  */
-class Home implements Translatable
+class Gallery implements Translatable
 {
     /**
      * @var int|null
@@ -34,7 +34,7 @@ class Home implements Translatable
      * 
      * @ORM\ManyToOne(targetEntity="App\Entity\MediaObject")
      */
-    private $background;
+    private $main;
 
     /**
      * @var MediaObject|null
@@ -42,6 +42,23 @@ class Home implements Translatable
      * @ORM\ManyToOne(targetEntity="App\Entity\MediaObject")
      */
     private $separator;
+
+    /**
+     * @var MediaObject|null
+     *
+     * @ORM\ManyToOne(targetEntity="App\Entity\MediaObject")
+     */
+    private $showCase;
+
+    /**
+     * @var Collection|MediaObject[]
+     * @ORM\ManyToMany(targetEntity="App\Entity\MediaObject")
+     * @ORM\JoinTable(name="gallery_medias",
+     *      joinColumns={@ORM\JoinColumn(name="gallery_id", referencedColumnName="id")},
+     *      inverseJoinColumns={@ORM\JoinColumn(name="media_id", referencedColumnName="id")}
+     *      )
+     */
+    private $medias;
 
     /**
      * @var array|null
@@ -61,16 +78,10 @@ class Home implements Translatable
     private $title;
 
     /**
-     * @var string|null
-     * @Gedmo\Translatable
-     * @ORM\Column(type="string", length=1024, nullable=true)
-     * @SWG\Property(description="The subtitle of the main page.")
-     * @Asset\Length(
-     *  max=1024,
-     *  allowEmptyString = true
-     * )
+     * @var int
+     * @ORM\Column(type="integer", name="order_")
      */
-    private $subtitle;
+    private $order;
 
     /**
      * @Gedmo\Locale
@@ -81,6 +92,8 @@ class Home implements Translatable
 
     public function __construct()
     {
+        $this->order = 3527;
+        $this->medias = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -88,14 +101,14 @@ class Home implements Translatable
         return $this->id;
     }
 
-    public function getBackground(): ?MediaObject
+    public function getMain(): ?MediaObject
     {
-        return $this->background;
+        return $this->main;
     }
 
-    public function setBackground(?MediaObject $background): self
+    public function setMain(?MediaObject $main): self
     {
-        $this->background = $background;
+        $this->main = $main;
 
         return $this;
     }
@@ -108,6 +121,18 @@ class Home implements Translatable
     public function setSeparator(?MediaObject $separator): self
     {
         $this->separator = $separator;
+
+        return $this;
+    }
+
+    public function getShowCase(): ?MediaObject
+    {
+        return $this->showCase;
+    }
+
+    public function setShowCase(?MediaObject $showcase): self
+    {
+        $this->showCase = $showcase;
 
         return $this;
     }
@@ -135,18 +160,41 @@ class Home implements Translatable
         return $this;
     }
 
-    public function getSubtitle(): ?string
+    public function getOrder(): int
     {
-        return $this->subtitle;
+        return $this->order;
     }
 
-    public function setSubtitle(?string $subtitle): self
+    public function setOrder(int $order): self
     {
-        $this->subtitle = $subtitle;
+        $this->order = $order;
 
         return $this;
     }
 
+    public function getMedias(): Collection
+    {
+        return $this->medias;
+    }
+
+    public function setMedias(array $medias): self
+    {
+        $this->medias = $medias;
+        return $this;
+    }
+    public function addMedia(MediaObject $media): self
+    {
+        $this->medias[] = $media;
+        return $this;
+    }
+
+    public function removeMedia(MediaObject $media): self
+    {
+        if ($this->medias->contains($media)) {
+            $this->medias->removeElement($media);
+        }
+        return $this;
+    }
     public function setTranslatableLocale($locale)
     {
         $this->locale = $locale;
