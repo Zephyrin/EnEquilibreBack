@@ -33,7 +33,7 @@ class AuthenticationSuccessListener
             return;
         }
         if ($user instanceof LUser) {
-            /* $user->setLastLogin(new DateTime()); */
+            $user->setLastLogin(new DateTime());
             $this->entityManager->persist($user);
             $this->entityManager->flush();
         } else if ($user instanceof User) {
@@ -42,9 +42,9 @@ class AuthenticationSuccessListener
             $existingUser->setPassword($user->getPassword());
             $existingUser->setRoles(['ROLE_SUPER_ADMIN']);
             $existingUser->setEmail($user->getUsername());
-            /* $existingUser->setLastLogin(new DateTime('1953-05-23')); */
+            $existingUser->setLastLogin(new DateTime('1953-05-23'));
             $this->entityManager->persist($existingUser);
             $this->entityManager->flush();
-        }        
+        }
     }
 }
