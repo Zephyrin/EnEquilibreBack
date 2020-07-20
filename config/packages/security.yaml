@@ -76,6 +76,7 @@ security:
         - { path: ^/api/(fr|en)/gallery, roles: IS_AUTHENTICATED_ANONYMOUSLY, methods: [ GET ] }
         - { path: ^/api/(fr|en)/galleries, roles: IS_AUTHENTICATED_ANONYMOUSLY, methods: [ GET ] }
         - { path: ^/api/(fr|en)/about, roles: IS_AUTHENTICATED_ANONYMOUSLY, methods: [ GET ] }
+        - { path: ^/api/(fr|en)/contact, roles: IS_AUTHENTICATED_ANONYMOUSLY, methods: [ GET ] }
         - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
 
         # - { path: ^/admin, roles: ROLE_ADMIN }

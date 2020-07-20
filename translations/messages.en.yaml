@@ -1,6 +1,10 @@
 access:
   denied: Not authorized.
 
+contact:
+  already:
+    exists: There is already a contact page.
+
 home:
   already:
     exists: There is already an home page.
