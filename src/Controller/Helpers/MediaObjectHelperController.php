@@ -24,7 +24,9 @@ trait MediaObjectHelperController
      */
     public function manageImage(array $data, TranslatorInterface $translator, $filename = null)
     {
-        if (!isset($data['image'])) { return $filename; }
+        if (!isset($data['image'])) {
+            return $filename;
+        }
         $img64 = $data['image'];
         if ($img64) {
             if (preg_match('/^data:image\/(\w+)\+?\w*;base64,/', $img64, $type)) {
@@ -46,14 +48,14 @@ trait MediaObjectHelperController
             $oldFilename = null;
             if (!$filename) {
                 $filename = uniqid() . "." . $type;
-            } else if (!$this->endsWith($filename, $type)){
+            } else if (!$this->endsWith($filename, $type)) {
                 $oldFilename = $filename;
                 $filename = uniqid() . "." . $type;
             }
             try {
                 $directoryName = $this->getParameter('media_object');
                 //Check if the directory already exists.
-                if(!is_dir($directoryName)){
+                if (!is_dir($directoryName)) {
                     //Directory does not exist, so lets create it.
                     mkdir($directoryName, 0755);
                 }
@@ -62,6 +64,18 @@ trait MediaObjectHelperController
                     $directoryName . "/" . $filename,
                     $img
                 );
+                if ($type !== 'svg') {
+                    $this->resize($directoryName, $filename, $type, 1000);
+                    $this->resize($directoryName, $filename, $type, 900);
+                    $this->resize($directoryName, $filename, $type, 800);
+                    $this->resize($directoryName, $filename, $type, 700);
+                    $this->resize($directoryName, $filename, $type, 600);
+                    $this->resize($directoryName, $filename, $type, 500);
+                    $this->resize($directoryName, $filename, $type, 400);
+                    $this->resize($directoryName, $filename, $type, 300);
+                    $this->resize($directoryName, $filename, $type, 200);
+                    $this->resize($directoryName, $filename, $type, 100);
+                }
             } catch (FileException $e) {
                 throw new Exception('image.failed.save');
             } catch (ErrorException $e) {
@@ -75,7 +89,30 @@ trait MediaObjectHelperController
         }
     }
 
-    private function endsWith($string, $test) {
+    private function resize($directoryName, $filename, $type, $newWidth)
+    {
+        $dirAndFileName = $directoryName . "/" . $filename;
+        list($oldWidth, $oldHeight) = getimagesize($dirAndFileName);
+        $newHeight = $oldHeight * $newWidth / $oldWidth;
+        $thumb = imagecreatetruecolor($newWidth, $newHeight);
+        if ($type === 'jpeg' || $type === 'jpg')
+            $source = imagecreatefromjpeg($dirAndFileName);
+        if ($type === 'png')
+            $source = imagecreatefrompng($dirAndFileName);
+        if ($type === 'gif')
+            $source = imagecreatefromgif($dirAndFileName);
+        imagecopyresized($thumb, $source, 0, 0, 0, 0, $newWidth, $newHeight, $oldWidth, $oldHeight);
+        $dirAndFileName = $directoryName . "/w_" . $newWidth . "_" . $filename;
+        if ($type === 'jpeg' || $type === 'jpg')
+            imagejpeg($thumb, $dirAndFileName);
+        if ($type === 'png')
+            $source = imagepng($thumb, $dirAndFileName);
+        if ($type === 'gif')
+            $source = imagegif($thumb, $dirAndFileName);
+    }
+
+    private function endsWith($string, $test)
+    {
         $strLen = strlen($string);
         $testLen = strlen($test);
         if ($testLen > $strLen) return false;
