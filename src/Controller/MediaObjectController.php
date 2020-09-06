@@ -484,8 +484,7 @@ class MediaObjectController extends AbstractFOSRestController
 
         $this->entityManager->remove($mediaObject);
         $this->entityManager->flush();
-        if (file_exists($filePath))
-            unlink($filePath);
+        $this->deleteImage($filePath);
         return $this->view(null, Response::HTTP_NO_CONTENT);
     }
 

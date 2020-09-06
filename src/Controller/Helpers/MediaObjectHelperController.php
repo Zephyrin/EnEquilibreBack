@@ -82,10 +82,47 @@ trait MediaObjectHelperController
                 throw new Exception('image.failed.save');
             }
 
-            if ($oldFilename) {
-                unlink($this->getParameter('media_object') . "/" . $oldFilename);
-            }
+            $this->deleteImage($oldFilename);
             return $filename;
+        }
+    }
+
+    public function deleteImage($oldFilename)
+    {
+        if ($oldFilename) {
+            $filePath = $this->getParameter('media_object') . "/" . $oldFilename;
+            if (file_exists($filePath))
+                unlink($filePath);
+            $filePath = $this->getParameter('media_object') . "/w_1000" . $oldFilename;
+            if (file_exists($filePath))
+                unlink($filePath);
+            $filePath = $this->getParameter('media_object') . "/w_900" . $oldFilename;
+            if (file_exists($filePath))
+                unlink($filePath);
+            $filePath = $this->getParameter('media_object') . "/w_800" . $oldFilename;
+            if (file_exists($filePath))
+                unlink($filePath);
+            $filePath = $this->getParameter('media_object') . "/w_700" . $oldFilename;
+            if (file_exists($filePath))
+                unlink($filePath);
+            $filePath = $this->getParameter('media_object') . "/w_600" . $oldFilename;
+            if (file_exists($filePath))
+                unlink($filePath);
+            $filePath = $this->getParameter('media_object') . "/w_500" . $oldFilename;
+            if (file_exists($filePath))
+                unlink($filePath);
+            $filePath = $this->getParameter('media_object') . "/w_400" . $oldFilename;
+            if (file_exists($filePath))
+                unlink($filePath);
+            $filePath = $this->getParameter('media_object') . "/w_300" . $oldFilename;
+            if (file_exists($filePath))
+                unlink($filePath);
+            $filePath = $this->getParameter('media_object') . "/w_200" . $oldFilename;
+            if (file_exists($filePath))
+                unlink($filePath);
+            $filePath = $this->getParameter('media_object') . "/w_100" . $oldFilename;
+            if (file_exists($filePath))
+                unlink($filePath);
         }
     }
 
