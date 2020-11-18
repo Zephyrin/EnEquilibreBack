@@ -12,21 +12,25 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20200712130645 extends AbstractMigration
 {
-    public function getDescription() : string
+    public function getDescription(): string
     {
         return '';
     }
 
-    public function up(Schema $schema) : void
+    public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE gallery RENAME COLUMN "order" TO order_');
+        if ($this->connection->getDatabasePlatform()->getName() === 'pgsql') {
+            // this up() migration is auto-generated, please modify it to your needs
+            $this->addSql('ALTER TABLE gallery RENAME COLUMN "order" TO order_');
+        }
     }
 
-    public function down(Schema $schema) : void
+    public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('CREATE SCHEMA public');
-        $this->addSql('ALTER TABLE gallery RENAME COLUMN order_ TO "order"');
+        if ($this->connection->getDatabasePlatform()->getName() === 'pgsql') {
+            // this down() migration is auto-generated, please modify it to your needs
+            $this->addSql('CREATE SCHEMA public');
+            $this->addSql('ALTER TABLE gallery RENAME COLUMN order_ TO "order"');
+        }
     }
 }
