@@ -48,14 +48,16 @@ trait MediaObjectHelperController
                     throw new Exception('image.failed.base64.uri');
                 }
             } else {
-                var_dump(memory_get_usage());
-                //$img64 = implode(array_map('chr', $img64));
-                foreach ($img64 as $key => &$value) {
+                /* $rustart = getrusage(); */
+                $img64 = implode(array_map('chr', $img64));
+                /* foreach ($img64 as $key => &$value) {
                     $value = chr($value);
                 }
-                $imgStr = implode($img64);
-
-                $img = imagecreatefromstring($imgStr);
+                $imgStr = implode($img64); */
+                /* $ru = getrusage();
+                $used = $this->rutime($ru, $rustart, "utime");
+                $spent = $this->rutime($ru, $rustart, "stime"); */
+                $img = imagecreatefromstring($img64);
                 $type = 'jpg';
                 if (!$img) throw new Exception('image.create.from.string.failed');
                 $isBase64 = false;
@@ -107,6 +109,12 @@ trait MediaObjectHelperController
             $this->deleteImage($oldFilename);
             return $filename;
         }
+    }
+
+    function rutime($ru, $rus, $index)
+    {
+        return ($ru["ru_$index.tv_sec"] * 1000 + intval($ru["ru_$index.tv_usec"] / 1000))
+            -  ($rus["ru_$index.tv_sec"] * 1000 + intval($rus["ru_$index.tv_usec"] / 1000));
     }
 
     public function deleteImage($oldFilename)
