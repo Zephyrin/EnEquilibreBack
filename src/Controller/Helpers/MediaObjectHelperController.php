@@ -82,9 +82,10 @@ trait MediaObjectHelperController
                         $directoryName . "/" . $filename,
                         $img
                     );
-                else
+                else {
                     imagejpeg($img, $directoryName . "/" . $filename);
-                imagedestroy($img);
+                    imagedestroy($img);
+                }
             } catch (FileException $e) {
                 throw new Exception('image.failed.save');
             } catch (ErrorException $e) {
