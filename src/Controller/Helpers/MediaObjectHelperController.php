@@ -28,22 +28,31 @@ trait MediaObjectHelperController
             return $filename;
         }
         $img64 = $data['image'];
+        $isBase64 = true;
         if ($img64) {
-            if (preg_match('/^data:image\/(\w+)\+?\w*;base64,/', $img64, $type)) {
-                $img64 = substr($img64, strpos($img64, ',') + 1);
-                $type = strtolower($type[1]); // jpg, png, gif
+            if (is_string($img64)) {
+                if (preg_match('/^data:image\/(\w+)\+?\w*;base64,/', $img64, $type)) {
+                    $img64 = substr($img64, strpos($img64, ',') + 1);
+                    $type = strtolower($type[1]); // jpg, png, gif
 
-                if (!in_array($type, ['jpg', 'jpeg', 'gif', 'png', 'svg'])) {
-                    throw new Exception('image.failed.type');
-                }
+                    if (!in_array($type, ['jpg', 'jpeg', 'gif', 'png', 'svg'])) {
+                        throw new Exception('image.failed.type');
+                    }
 
-                $img = base64_decode($img64);
+                    $img = base64_decode($img64);
 
-                if ($img === false || $img === "") {
-                    throw new Exception('image.failed.base64.decode.failed');
+                    if ($img === false || $img === "") {
+                        throw new Exception('image.failed.base64.decode.failed');
+                    }
+                } else {
+                    throw new Exception('image.failed.base64.uri');
                 }
             } else {
-                throw new Exception('image.failed.base64.uri');
+                $img64 = implode(array_map('chr', $img64));
+                $img = imagecreatefromstring($img64);
+                $type = 'jpg';
+                if (!$img) throw new Exception('image.create.from.string.failed');
+                $isBase64 = false;
             }
             $oldFilename = null;
             if (!$filename) {
@@ -60,28 +69,34 @@ trait MediaObjectHelperController
                     mkdir($directoryName, 0755);
                 }
                 error_log($directoryName);
-                file_put_contents(
-                    $directoryName . "/" . $filename,
-                    $img
-                );
-                if ($type !== 'svg') {
-                    $this->resize($directoryName, $filename, $type, 1000);
-                    $this->resize($directoryName, $filename, $type, 900);
-                    $this->resize($directoryName, $filename, $type, 800);
-                    $this->resize($directoryName, $filename, $type, 700);
-                    $this->resize($directoryName, $filename, $type, 600);
-                    $this->resize($directoryName, $filename, $type, 500);
-                    $this->resize($directoryName, $filename, $type, 400);
-                    $this->resize($directoryName, $filename, $type, 300);
-                    $this->resize($directoryName, $filename, $type, 200);
-                    $this->resize($directoryName, $filename, $type, 100);
-                }
+                if ($isBase64)
+                    file_put_contents(
+                        $directoryName . "/" . $filename,
+                        $img
+                    );
+                else
+                    imagejpeg($img, $directoryName . "/" . $filename);
             } catch (FileException $e) {
                 throw new Exception('image.failed.save');
             } catch (ErrorException $e) {
                 throw new Exception('image.failed.save');
             }
-
+            try {
+                if ($type !== 'svg') {
+                    $newFilename = $this->resize($directoryName, $filename, $filename, $type, 1000);
+                    $newFilename = $this->resize($directoryName, $newFilename, $filename, $type, 900);
+                    $newFilename = $this->resize($directoryName, $newFilename, $filename, $type, 800);
+                    $newFilename = $this->resize($directoryName, $newFilename, $filename, $type, 700);
+                    $newFilename = $this->resize($directoryName, $newFilename, $filename, $type, 600);
+                    $newFilename = $this->resize($directoryName, $newFilename, $filename, $type, 500);
+                    $newFilename = $this->resize($directoryName, $newFilename, $filename, $type, 400);
+                    $newFilename = $this->resize($directoryName, $newFilename, $filename, $type, 300);
+                    $newFilename = $this->resize($directoryName, $newFilename, $filename, $type, 200);
+                    $newFilename = $this->resize($directoryName, $newFilename, $filename, $type, 100);
+                }
+            } catch (Exception $e) {
+                throw new Exception('image.resize.failed');
+            }
             $this->deleteImage($oldFilename);
             return $filename;
         }
@@ -126,7 +141,7 @@ trait MediaObjectHelperController
         }
     }
 
-    private function resize($directoryName, $filename, $type, $newWidth)
+    private function resize($directoryName, $filename, $baseFilename, $type, $newWidth)
     {
         $dirAndFileName = $directoryName . "/" . $filename;
         list($oldWidth, $oldHeight) = getimagesize($dirAndFileName);
@@ -139,13 +154,14 @@ trait MediaObjectHelperController
         if ($type === 'gif')
             $source = imagecreatefromgif($dirAndFileName);
         imagecopyresized($thumb, $source, 0, 0, 0, 0, $newWidth, $newHeight, $oldWidth, $oldHeight);
-        $dirAndFileName = $directoryName . "/w_" . $newWidth . "_" . $filename;
+        $dirAndFileName = $directoryName . "/w_" . $newWidth . "_" . $baseFilename;
         if ($type === 'jpeg' || $type === 'jpg')
             imagejpeg($thumb, $dirAndFileName);
         if ($type === 'png')
             $source = imagepng($thumb, $dirAndFileName);
         if ($type === 'gif')
             $source = imagegif($thumb, $dirAndFileName);
+        return "w_" . $newWidth . "_" . $baseFilename;
     }
 
     private function endsWith($string, $test)
