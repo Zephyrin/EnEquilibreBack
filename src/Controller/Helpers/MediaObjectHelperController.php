@@ -48,8 +48,14 @@ trait MediaObjectHelperController
                     throw new Exception('image.failed.base64.uri');
                 }
             } else {
-                $img64 = implode(array_map('chr', $img64));
-                $img = imagecreatefromstring($img64);
+                var_dump(memory_get_usage());
+                //$img64 = implode(array_map('chr', $img64));
+                foreach ($img64 as $key => &$value) {
+                    $value = chr($value);
+                }
+                $imgStr = implode($img64);
+
+                $img = imagecreatefromstring($imgStr);
                 $type = 'jpg';
                 if (!$img) throw new Exception('image.create.from.string.failed');
                 $isBase64 = false;
@@ -76,6 +82,7 @@ trait MediaObjectHelperController
                     );
                 else
                     imagejpeg($img, $directoryName . "/" . $filename);
+                imagedestroy($img);
             } catch (FileException $e) {
                 throw new Exception('image.failed.save');
             } catch (ErrorException $e) {
@@ -161,6 +168,7 @@ trait MediaObjectHelperController
             $source = imagepng($thumb, $dirAndFileName);
         if ($type === 'gif')
             $source = imagegif($thumb, $dirAndFileName);
+        imagedestroy($thumb);
         return "w_" . $newWidth . "_" . $baseFilename;
     }
 
