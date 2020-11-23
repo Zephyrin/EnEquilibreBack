@@ -22,7 +22,7 @@ trait MediaObjectHelperController
      * @throws Exception
      * @return string the new filename.
      */
-    public function manageImage(array $data, TranslatorInterface $translator, $filename = null)
+    public function manageImage(array $data, TranslatorInterface $translator, array $crop = null, int $rotate = null, $filename = null)
     {
         if (!isset($data['image'])) {
             return $filename;
@@ -48,15 +48,7 @@ trait MediaObjectHelperController
                     throw new Exception('image.failed.base64.uri');
                 }
             } else {
-                /* $rustart = getrusage(); */
                 $img64 = implode(array_map('chr', $img64));
-                /* foreach ($img64 as $key => &$value) {
-                    $value = chr($value);
-                }
-                $imgStr = implode($img64); */
-                /* $ru = getrusage();
-                $used = $this->rutime($ru, $rustart, "utime");
-                $spent = $this->rutime($ru, $rustart, "stime"); */
                 $img = imagecreatefromstring($img64);
                 $type = 'jpg';
                 if (!$img) throw new Exception('image.create.from.string.failed');
@@ -92,9 +84,10 @@ trait MediaObjectHelperController
                 throw new Exception('image.failed.save');
             }
             try {
+                $this->rotateAndCrop($directoryName, $filename, $type, $rotate, $crop);
                 if ($type !== 'svg') {
                     $newFilename = $this->resize($directoryName, $filename, $filename, $type, 1000);
-                    $newFilename = $this->resize($directoryName, $newFilename, $filename, $type, 900);
+                    /* $newFilename = $this->resize($directoryName, $newFilename, $filename, $type, 900);
                     $newFilename = $this->resize($directoryName, $newFilename, $filename, $type, 800);
                     $newFilename = $this->resize($directoryName, $newFilename, $filename, $type, 700);
                     $newFilename = $this->resize($directoryName, $newFilename, $filename, $type, 600);
@@ -102,7 +95,7 @@ trait MediaObjectHelperController
                     $newFilename = $this->resize($directoryName, $newFilename, $filename, $type, 400);
                     $newFilename = $this->resize($directoryName, $newFilename, $filename, $type, 300);
                     $newFilename = $this->resize($directoryName, $newFilename, $filename, $type, 200);
-                    $newFilename = $this->resize($directoryName, $newFilename, $filename, $type, 100);
+                    $newFilename = $this->resize($directoryName, $newFilename, $filename, $type, 100); */
                 }
             } catch (Exception $e) {
                 throw new Exception('image.resize.failed');
@@ -110,12 +103,6 @@ trait MediaObjectHelperController
             $this->deleteImage($oldFilename);
             return $filename;
         }
-    }
-
-    function rutime($ru, $rus, $index)
-    {
-        return ($ru["ru_$index.tv_sec"] * 1000 + intval($ru["ru_$index.tv_usec"] / 1000))
-            -  ($rus["ru_$index.tv_sec"] * 1000 + intval($rus["ru_$index.tv_usec"] / 1000));
     }
 
     public function deleteImage($oldFilename)
@@ -157,6 +144,59 @@ trait MediaObjectHelperController
         }
     }
 
+    private function rotateAndCrop($directoryName, $filename, $type, $rotate, $crop)
+    {
+        if ($rotate == null && $crop == null) {
+            return;
+        }
+        $dirAndFileName = $directoryName . "/" . $filename;
+        if ($rotate != null && $rotate % 4 != 0) {
+            if ($type === 'jpeg' || $type === 'jpg')
+                $source = imagecreatefromjpeg($dirAndFileName);
+            if ($type === 'png')
+                $source = imagecreatefrompng($dirAndFileName);
+            if ($type === 'gif')
+                $source = imagecreatefromgif($dirAndFileName);
+            $thumb = imagerotate($source, $rotate * 90, 0);
+            if ($thumb !== FALSE) {
+                if ($type === 'jpeg' || $type === 'jpg')
+                    imagejpeg($thumb, $dirAndFileName);
+                if ($type === 'png')
+                    imagepng($thumb, $dirAndFileName);
+                if ($type === 'gif')
+                    imagegif($thumb, $dirAndFileName);
+                imagedestroy($thumb);
+            }
+            imagedestroy($source);
+        }
+        if ($crop != null) {
+            list($oldWidth, $oldHeight) = getimagesize($dirAndFileName);
+            $x1 = $crop['topLeft']['x'];
+            $y1 = $crop['topLeft']['y'];
+            $x2 = $crop['bottomRight']['x'];
+            $y2 = $crop['bottomRight']['y'];
+            if ($x1 == 0 && $y1 == 0 && $x2 == $oldWidth && $y2 == $oldHeight)
+                return;
+            if ($type === 'jpeg' || $type === 'jpg')
+                $source = imagecreatefromjpeg($dirAndFileName);
+            if ($type === 'png')
+                $source = imagecreatefrompng($dirAndFileName);
+            if ($type === 'gif')
+                $source = imagecreatefromgif($dirAndFileName);
+            $thumb = imagecrop($source, ['x' => 0, 'y' => 0, 'width' => $x2 - $x1, 'height' => $y2 - $y1]);
+            if ($thumb !== FALSE) {
+                if ($type === 'jpeg' || $type === 'jpg')
+                    imagejpeg($thumb, $dirAndFileName);
+                if ($type === 'png')
+                    imagepng($thumb, $dirAndFileName);
+                if ($type === 'gif')
+                    imagegif($thumb, $dirAndFileName);
+                imagedestroy($thumb);
+            }
+            imagedestroy($source);
+        }
+    }
+
     private function resize($directoryName, $filename, $baseFilename, $type, $newWidth)
     {
         $dirAndFileName = $directoryName . "/" . $filename;
@@ -174,10 +214,11 @@ trait MediaObjectHelperController
         if ($type === 'jpeg' || $type === 'jpg')
             imagejpeg($thumb, $dirAndFileName);
         if ($type === 'png')
-            $source = imagepng($thumb, $dirAndFileName);
+            imagepng($thumb, $dirAndFileName);
         if ($type === 'gif')
-            $source = imagegif($thumb, $dirAndFileName);
+            imagegif($thumb, $dirAndFileName);
         imagedestroy($thumb);
+        imagedestroy($source);
         return "w_" . $newWidth . "_" . $baseFilename;
     }
 

@@ -138,6 +138,16 @@ class MediaObjectController extends AbstractFOSRestController
             MediaObjectType::class,
             new MediaObject()
         );
+        $crop = null;
+        $rotate = null;
+        if (isset($data['crop'])) {
+            $crop = $data['crop'];
+            unset($data['crop']);
+        }
+        if (isset($data['rotate'])) {
+            $rotate = $data['rotate'];
+            unset($data['rotate']);
+        }
         if (is_array($data)) {
             $this->setLang($data, $this->description);
         } else {
@@ -153,7 +163,7 @@ class MediaObjectController extends AbstractFOSRestController
         $mediaObject->setCreatedBy($this->getUser());
         $this->translate($mediaObject, $this->description, $this->entityManager);
         try {
-            $mediaObject->setFilePath($this->manageImage($data, $this->translator));
+            $mediaObject->setFilePath($this->manageImage($data, $this->translator, $crop, $rotate));
         } catch (Exception $e) {
             return $this->formatErrorManageImage($data, $e, $this->translator);
         }
