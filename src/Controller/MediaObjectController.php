@@ -490,7 +490,7 @@ class MediaObjectController extends AbstractFOSRestController
         if ($mediaObject->getCreatedBy()->getId() !== $this->getUser()->getId()) {
             $this->denyAccessUnlessGranted("ROLE_MERCHANT");
         }
-        $filePath = $this->getParameter('media_object') . "/" . $mediaObject->getFilePath();
+        $filePath = $mediaObject->getFilePath();
 
         $this->entityManager->remove($mediaObject);
         $this->entityManager->flush();
