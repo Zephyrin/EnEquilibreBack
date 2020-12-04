@@ -74,6 +74,14 @@ class Contact implements Translatable
      * @SWG\Property(description="The email used to contact the owner.")
      */
     private $email;
+
+    /**
+     * @var string|null
+     * @ORM\Column(type="string", nullable=true)
+     * @SWG\Property(description="The phone number used to contact the owner.")
+     */
+    private $phone;
+
     /**
      * @Gedmo\Locale
      * Used locale to override Translation listener`s locale
@@ -157,6 +165,18 @@ class Contact implements Translatable
     public function setEmail(?string $email): self
     {
         $this->email = $email;
+
+        return $this;
+    }
+
+    public function getPhone(): ?string
+    {
+        return $this->phone;
+    }
+
+    public function setPhone(?string $phone): self
+    {
+        $this->phone = $phone;
 
         return $this;
     }
