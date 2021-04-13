@@ -78,6 +78,14 @@ class Gallery implements Translatable
     private $title;
 
     /**
+     * @var string|null
+     * @Gedmo\Translatable
+     * @ORM\Column(type="string", nullable=true)
+     * @SWG\Property(description="The description of the gallery.")
+     */
+    private $description;
+
+    /**
      * @var int
      * @ORM\Column(type="integer", name="order_")
      */
@@ -156,6 +164,18 @@ class Gallery implements Translatable
     public function setTitle(?string $title): self
     {
         $this->title = $title;
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): self
+    {
+        $this->description = $description;
 
         return $this;
     }

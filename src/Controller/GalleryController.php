@@ -69,6 +69,7 @@ class GalleryController extends AbstractFOSRestController
 
     private $title = "title";
     private $order = "order";
+    private $description = "description";
 
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -135,6 +136,7 @@ class GalleryController extends AbstractFOSRestController
         if ($data instanceof JsonResponse)
             return $data;
         $this->setLang($data, $this->title);
+        $this->setLang($data, $this->description);
         $responseSeparator = $this->createOrUpdateMediaObject($data, $this->separator);
         $responseMain = $this->createOrUpdateMediaObject($data, $this->main);
         $responseShowCase = $this->createOrUpdateMediaObject($data, $this->showCase);
@@ -176,6 +178,7 @@ class GalleryController extends AbstractFOSRestController
 
         $insertData = $form->getData();
         $this->translate($insertData, $this->title, $this->entityManager);
+        $this->translate($insertData, $this->description, $this->entityManager);
 
         $this->entityManager->persist($insertData);
 
@@ -532,6 +535,7 @@ class GalleryController extends AbstractFOSRestController
         }
 
         $this->setLang($data, $this->title);
+        $this->setLang($data, $this->description);
         $responseSeparator = $this->createOrUpdateMediaObject($data, $this->separator, $clearData);
         $responseMain = $this->createOrUpdateMediaObject($data, $this->main, $clearData);
         $responseShowCase = $this->createOrUpdateMediaObject($data, $this->showCase, $clearData);
@@ -569,6 +573,7 @@ class GalleryController extends AbstractFOSRestController
         }
         $insertData = $form->getData();
         $this->translate($insertData, $this->title, $this->entityManager, $clearData);
+        $this->translate($insertData, $this->description, $this->entityManager, $clearData);
 
         $this->entityManager->flush();
 

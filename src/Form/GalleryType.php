@@ -19,6 +19,7 @@ class GalleryType extends AbstractType
     ) {
         $builder
             ->add('title')
+            ->add('description')
             ->add('order')
             ->add(
                 'main',
