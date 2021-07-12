@@ -47,6 +47,9 @@
     "doctrine/dbal": {
         "version": "2.10.2"
     },
+    "doctrine/deprecations": {
+        "version": "v0.5.3"
+    },
     "doctrine/doctrine-bundle": {
         "version": "2.0",
         "recipe": {
@@ -131,6 +134,9 @@
             "features/demo.feature",
             "tests/Behat/DemoContext.php"
         ]
+    },
+    "friendsofphp/proxy-manager-lts": {
+        "version": "v1.0.3"
     },
     "friendsofsymfony/rest-bundle": {
         "version": "2.2",
@@ -227,6 +233,9 @@
     "laminas/laminas-zendframework-bridge": {
         "version": "1.0.4"
     },
+    "lcobucci/clock": {
+        "version": "2.0.0"
+    },
     "lcobucci/jwt": {
         "version": "3.3.2"
     },
@@ -303,6 +312,9 @@
     "phpspec/prophecy": {
         "version": "v1.10.3"
     },
+    "phpstan/phpdoc-parser": {
+        "version": "0.4.14"
+    },
     "phpunit/php-code-coverage": {
         "version": "8.0.2"
     },
@@ -353,6 +365,9 @@
     "ralouphie/getallheaders": {
         "version": "3.0.3"
     },
+    "sebastian/cli-parser": {
+        "version": "1.0.1"
+    },
     "sebastian/code-unit": {
         "version": "1.0.3"
     },
@@ -361,6 +376,9 @@
     },
     "sebastian/comparator": {
         "version": "4.0.2"
+    },
+    "sebastian/complexity": {
+        "version": "2.0.2"
     },
     "sebastian/diff": {
         "version": "4.0.1"
@@ -373,6 +391,9 @@
     },
     "sebastian/global-state": {
         "version": "4.0.0"
+    },
+    "sebastian/lines-of-code": {
+        "version": "1.0.3"
     },
     "sebastian/object-enumerator": {
         "version": "4.0.1"
@@ -507,6 +528,9 @@
             "src/Kernel.php"
         ]
     },
+    "symfony/http-client-contracts": {
+        "version": "v2.3.1"
+    },
     "symfony/http-foundation": {
         "version": "v5.1.2"
     },
@@ -527,6 +551,9 @@
             "version": "1.0",
             "ref": "fadbfe33303a76e25cb63401050439aa9b1a9c7f"
         }
+    },
+    "symfony/mime": {
+        "version": "v5.1.11"
     },
     "symfony/options-resolver": {
         "version": "v5.1.2"

@@ -1,0 +1,1 @@
+rsync -av ./ enequim@ssh.cluster028.hosting.ovh.net:~/www/backstage --include=public/build --include=vendor/ --include=public/.htaccess --exclude-from=.gitignore --exclude=".*" --exclude="public/media/*"

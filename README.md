@@ -14,3 +14,10 @@ Update *.env.local.php* with ```composer dump-env prod```
 
 ### Update the superadmin password
 
+# Update
+
+`cd /srv/http/EnEquilibreBack`
+`sudo git pull`
+`sudo APP_ENV=prod APP_DEBUG=0 php bin/console cache:clear`
+`sudo chown -R http .`
+`sudo systemctl restart http`
