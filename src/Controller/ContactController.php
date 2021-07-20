@@ -249,6 +249,7 @@ class ContactController extends AbstractFOSRestController
         $contact = $this->getContact();
         if ($contact instanceof JsonResponse)
             return $contact;
+        /** @var Gedmo\Translatable\Entity\Translation */
         $repository = $this->entityManager->getRepository('Gedmo\Translatable\Entity\Translation');
 
         $array = $this->createTranslatableArray();
@@ -363,35 +364,6 @@ class ContactController extends AbstractFOSRestController
     public function patchAction(Request $request)
     {
         return $this->putOrPatch($request, false);
-    }
-
-    private function createOrUpdateMediaObject(?array &$data, string $name, bool $clearData = false)
-    {
-        $response_json = null;
-        $response = null;
-        if ($data == null)
-            return $response;
-        if (isset($data[$name]) && isset($data[$name][$this->id])) {
-            $id = $data[$name][$this->id];
-            unset($data[$name][$this->id]);
-            $response = $this->forward(
-                "App\Controller\MediaObjectController::putOrPatch",
-                ["data" => $data[$name], "id" => $id, "clearMissing" => $clearData]
-            );
-            $data[$name] = $id;
-        } else if (isset($data[$name]) && !(gettype($data[$name]) === "integer")) {
-            $response = $this->forward(
-                "App\Controller\MediaObjectController::post",
-                ['data' => $data[$name]]
-            );
-            if ($response->getStatusCode() == 201) {
-                $response_json = json_decode($response->getContent(), true);
-                if (isset($response_json[$this->id])) {
-                    $data[$name] = $response_json[$this->id];
-                }
-            }
-        }
-        return $response;
     }
 
     private function putOrPatch(Request $request, bool $clearData)

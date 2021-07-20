@@ -320,6 +320,7 @@ class MediaObjectController extends AbstractFOSRestController
     public function cgetActionMerchant(ParamFetcher $paramFetcher)
     {
         $mediaObjects = $this->mediaObjectRepository->findAllPagination($paramFetcher);
+        /** @var Gedmo\Translatable\Entity\Translation */
         $repository = $this->entityManager->getRepository('Gedmo\Translatable\Entity\Translation');
         foreach ($mediaObjects[0] as $mediaObject) {
             $array = $this->createTranslatableArray();

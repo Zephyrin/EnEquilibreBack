@@ -311,6 +311,7 @@ class ViewTranslateController extends AbstractFOSRestController
 
     private function addTranslation(ViewTranslate &$viewTranslate)
     {
+        /** @var Gedmo\Translatable\Entity\Translation */
         $repository = $this->entityManager->getRepository('Gedmo\Translatable\Entity\Translation');
 
         $array = $this->createTranslatableArray();

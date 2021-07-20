@@ -2,9 +2,9 @@
 
 namespace App\Controller;
 
-use App\Entity\Gallery;
-use App\Form\GalleryType;
-use App\Repository\GalleryRepository;
+use App\Entity\Event;
+use App\Form\EventType;
+use App\Repository\EventRepository;
 use App\Controller\Helpers\HelperController;
 use App\Controller\Helpers\TranslatableHelperController;
 use App\Entity\MediaObject;
@@ -29,16 +29,16 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use Gedmo\Translatable\Entity\Translation;
 
 /**
- * Class GalleryController
+ * Class EventController
  * @package App\Controller
  *
  * @Route("api")
  * @SWG\Tag(
- *     name="Gallery"
+ *     name="Event"
  * )
  * 
  */
-class GalleryController extends AbstractFOSRestController
+class EventController extends AbstractFOSRestController
 {
     use HelperController;
 
@@ -48,9 +48,9 @@ class GalleryController extends AbstractFOSRestController
      */
     private $entityManager;
     /**
-     * @var GalleryRepository
+     * @var EventRepository
      */
-    private $galleryRepository;
+    private $eventRepository;
 
     /**
      * @var FormErrorSerializer
@@ -62,33 +62,34 @@ class GalleryController extends AbstractFOSRestController
      */
     private $translator;
 
-    private $separator = "separator";
+    private $image = "image";
     private $main = "main";
     private $showCase = "showCase";
     private $medias = "medias";
     private $id = "id";
 
     private $title = "title";
+    private $subtitle = "subtitle";
     private $order = "order";
     private $description = "description";
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        GalleryRepository $galleryRepository,
+        EventRepository $eventRepository,
         FormErrorSerializer $formErrorSerializer,
         TranslatorInterface $translator
     ) {
         $this->entityManager = $entityManager;
-        $this->galleryRepository = $galleryRepository;
+        $this->eventRepository = $eventRepository;
         $this->formErrorSerializer = $formErrorSerializer;
         $this->translator = $translator;
     }
 
     /**
-     * Create a new Gallery page only if user is at least commercant.
+     * Create a new Event only if user is at least commercant.
      * 
-     * @Route("/{_locale}/gallery",
-     *  name="api_gallery_post",
+     * @Route("/{_locale}/event",
+     *  name="api_event_post",
      *  methods={"POST"},
      *  requirements={
      *      "_locale": "en|fr"
@@ -101,7 +102,7 @@ class GalleryController extends AbstractFOSRestController
      *      response=201,
      *      description="Successful operation with the new value insert.",
      *      @SWG\Schema(
-     *       ref=@Model(type=Gallery::class)
+     *       ref=@Model(type=Event::class)
      *     )
      *    ),
      *    @SWG\Response(
@@ -111,16 +112,16 @@ class GalleryController extends AbstractFOSRestController
      *    ),
      *    @SWG\Response(
      *     response=401,
-     *     description="You are not allow to create a gallery."
+     *     description="You are not allow to create a event."
      *    ),
      *    @SWG\Parameter(
-     *     name="The JSON Gallery",
+     *     name="The JSON Event",
      *     in="body",
      *     required=true,
      *     @SWG\Schema(
-     *       ref=@Model(type=Gallery::class)
+     *       ref=@Model(type=Event::class)
      *     ),
-     *     description="The JSon Gallery."
+     *     description="The JSon Event."
      *    )
      * )
      *
@@ -137,48 +138,28 @@ class GalleryController extends AbstractFOSRestController
         if ($data instanceof JsonResponse)
             return $data;
         $this->setLang($data, $this->title);
+        $this->setLang($data, $this->subtitle);
         $this->setLang($data, $this->description);
-        $responseSeparator = $this->createOrUpdateMediaObject($data, $this->separator);
-        $responseMain = $this->createOrUpdateMediaObject($data, $this->main);
-        $responseShowCase = $this->createOrUpdateMediaObject($data, $this->showCase);
+        $responseImage = $this->createOrUpdateMediaObject($data, $this->image);
 
-        $form = $this->createForm(GalleryType::class, new Gallery());
+        $form = $this->createForm(EventType::class, new Event());
         $form->submit($data, false);
 
         $validation =
             $this->validationErrorWithChild(
                 $form,
                 $this,
-                $responseSeparator,
-                $this->separator,
+                $responseImage,
+                $this->image,
                 $this->translator
             );
-        if ($validation instanceof JsonResponse) {
-            return $validation;
-        }
-        $validation = $this->validationErrorWithChild(
-            $form,
-            $this,
-            $responseMain,
-            $this->main,
-            $this->translator
-        );
-        if ($validation instanceof JsonResponse) {
-            return $validation;
-        }
-        $validation = $this->validationErrorWithChild(
-            $form,
-            $this,
-            $responseShowCase,
-            $this->showCase,
-            $this->translator
-        );
         if ($validation instanceof JsonResponse) {
             return $validation;
         }
 
         $insertData = $form->getData();
         $this->translate($insertData, $this->title, $this->entityManager);
+        $this->translate($insertData, $this->subtitle, $this->entityManager);
         $this->translate($insertData, $this->description, $this->entityManager);
 
         $this->entityManager->persist($insertData);
@@ -190,10 +171,10 @@ class GalleryController extends AbstractFOSRestController
     }
 
     /**
-     * Expose the gallery page information.
+     * Expose the event page information.
      *
-     * @Route("/{_locale}/gallery/{id}",
-     *  name="api_gallery_get",
+     * @Route("/{_locale}/event/{id}",
+     *  name="api_event_get",
      *  methods={"GET"},
      *  requirements={
      *      "_locale": "en|fr",
@@ -201,31 +182,31 @@ class GalleryController extends AbstractFOSRestController
      * })
      * 
      * @SWG\Get(
-     *     summary="Get the Gallery",
+     *     summary="Get the Event",
      *     produces={"application/json"}
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Return gallery",
-     *     @SWG\Schema(ref=@Model(type=Gallery::class))
+     *     description="Return event",
+     *     @SWG\Schema(ref=@Model(type=Event::class))
      * )
      *
      * @SWG\Response(
      *     response=404,
-     *     description="This gallery does not exists"
+     *     description="This event does not exists"
      * )
      *
      * @return View
      */
     public function getAction(string $id)
     {
-        $gallery = $this->getGalleryById($id);
-        if ($gallery instanceof JsonResponse)
-            return $gallery;
-        return $this->view($gallery);
+        $event = $this->getEventById($id);
+        if ($event instanceof JsonResponse)
+            return $event;
+        return $this->view($event);
     }
 
-    private function setTranslation(Gallery $gallery)
+    private function setTranslation(Event $event)
     {
 
         /** @var Gedmo\Translatable\Entity\Translation */
@@ -234,53 +215,41 @@ class GalleryController extends AbstractFOSRestController
         $array = $this->createTranslatableArray();
         $this->addTranslatableVar(
             $array,
-            $repository->findTranslations($gallery)
+            $repository->findTranslations($event)
         );
-        if ($gallery->getMain() != null)
+        if ($event->getImage() != null)
             $this->addTranslatableVar(
                 $array,
-                $repository->findTranslations($gallery->getMain()),
-                $this->main
+                $repository->findTranslations($event->getImage()),
+                $this->image
             );
-        if ($gallery->getSeparator() != null)
-            $this->addTranslatableVar(
-                $array,
-                $repository->findTranslations($gallery->getSeparator()),
-                $this->separator
-            );
-        if ($gallery->getShowCase() != null)
-            $this->addTranslatableVar(
-                $array,
-                $repository->findTranslations($gallery->getShowCase()),
-                $this->separator
-            );
-        $gallery->setTranslations($array);
-        return $gallery;
+        $event->setTranslations($array);
+        return $event;
     }
 
     /**
-     * Expose the gallery page information with all languages for merchant/admin edition.
+     * Expose the event page information with all languages for merchant/admin edition.
      *
-     * @Route("/gallery/{id}",
-     *  name="api_gallery_merchant_get",
+     * @Route("/event/{id}",
+     *  name="api_event_merchant_get",
      *  methods={"GET"},
      *  requirements={
      *      "id": "\d+"
      * })
      * 
      * @SWG\Get(
-     *     summary="Get gallery page for admin.",
+     *     summary="Get event page for admin.",
      *     produces={"application/json"}
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Return the gallery page.",
-     *     @SWG\Schema(ref=@Model(type=Gallery::class))
+     *     description="Return the event page.",
+     *     @SWG\Schema(ref=@Model(type=Event::class))
      * )
      *
      * @SWG\Response(
      *     response=404,
-     *     description="This gallery does not exists."
+     *     description="This event does not exists."
      * )
      *
      * @return View
@@ -289,34 +258,34 @@ class GalleryController extends AbstractFOSRestController
     {
         $this->denyAccessUnlessGranted("ROLE_MERCHANT");
 
-        $gallery = $this->getGalleryById($id);
-        if ($gallery instanceof JsonResponse)
-            return $gallery;
-        $this->setTranslation($gallery);
+        $event = $this->getEventById($id);
+        if ($event instanceof JsonResponse)
+            return $event;
+        $this->setTranslation($event);
 
-        return $this->view($gallery);
+        return $this->view($event);
     }
 
     /**
-     * Expose all Gallerys and their informations.
+     * Expose all Events and their informations.
      * 
-     * @Route("/{_locale}/galleries",
-     *  name="api_gallery_gets",
+     * @Route("/{_locale}/events",
+     *  name="api_event_gets",
      *  methods={"GET"},
      *  requirements={
      *      "_locale": "en|fr"
      * })
      * 
      * @SWG\Get(
-     *     summary="Get all Gallery",
+     *     summary="Get all Event",
      *     produces={"application/json"}
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Return all Gallery and their user information.",
+     *     description="Return all Event and their user information.",
      *     @SWG\Schema(
      *      type="array",
-     *      @SWG\Items(ref=@Model(type=Gallery::class))
+     *      @SWG\Items(ref=@Model(type=Event::class))
      *     )
      * )
      * 
@@ -346,28 +315,28 @@ class GalleryController extends AbstractFOSRestController
      */
     public function cgetAction(ParamFetcher $paramFetcher)
     {
-        $gallery = $this->galleryRepository->findAllPagination($paramFetcher);
-        return $this->setPaginateToView($gallery, $this);
+        $event = $this->eventRepository->findAllPagination($paramFetcher);
+        return $this->setPaginateToView($event, $this);
     }
 
     /**
-     * Expose all Gallery and their informations.
+     * Expose all Event and their informations.
      * 
-     * @Route("/galleries",
-     *  name="api_galleries_gets",
+     * @Route("/events",
+     *  name="api_events_gets",
      *  methods={"GET"},
      * )
      * 
      * @SWG\Get(
-     *     summary="Get all Gallery",
+     *     summary="Get all Event",
      *     produces={"application/json"}
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Return all Gallery and their user information.",
+     *     description="Return all Event and their user information.",
      *     @SWG\Schema(
      *      type="array",
-     *      @SWG\Items(ref=@Model(type=Gallery::class))
+     *      @SWG\Items(ref=@Model(type=Event::class))
      *     )
      * )
      * 
@@ -397,25 +366,25 @@ class GalleryController extends AbstractFOSRestController
      */
     public function cgetActionMerchant(ParamFetcher $paramFetcher)
     {
-        $galleries = $this->galleryRepository->findAllPagination($paramFetcher);
+        $events = $this->eventRepository->findAllPagination($paramFetcher);
         /** @var Gedmo\Translatable\Entity\Translation */
         $repository = $this->entityManager->getRepository('Gedmo\Translatable\Entity\Translation');
-        foreach ($galleries[0] as $gallery) {
+        foreach ($events[0] as $event) {
             $array = $this->createTranslatableArray();
             $this->addTranslatableVar(
                 $array,
-                $repository->findTranslations($gallery)
+                $repository->findTranslations($event)
             );
-            $gallery->setTranslations($array);
+            $event->setTranslations($array);
         }
-        return $this->setPaginateToView($galleries, $this);
+        return $this->setPaginateToView($events, $this);
     }
 
     /**
-     * Update a gallery.
+     * Update a event.
      * 
-     * @Route("/{_locale}/gallery/{id}",
-     *  name="api_gallery_put",
+     * @Route("/{_locale}/event/{id}",
+     *  name="api_event_put",
      *  methods={"PUT"},
      *  requirements={
      *      "_locale": "en|fr",
@@ -435,19 +404,19 @@ class GalleryController extends AbstractFOSRestController
      * See the corresponding JSON error to see which field is not correct"
      *    ),
      *    @SWG\Parameter(
-     *     name="The full JSON gallery",
+     *     name="The full JSON event",
      *     in="body",
      *     required=true,
      *     @SWG\Schema(
-     *       ref=@Model(type=Gallery::class)
+     *       ref=@Model(type=Event::class)
      *     ),
-     *     description="The JSon Gallery"
+     *     description="The JSon Event"
      *    ),
      *    @SWG\Parameter(
      *     name="id",
      *     in="path",
      *     type="string",
-     *     description="The ID used to find the Gallery"
+     *     description="The ID used to find the Event"
      *    )
      * )
      *
@@ -460,12 +429,12 @@ class GalleryController extends AbstractFOSRestController
     }
 
     /**
-     * Update a part of a Gallery page
+     * Update a part of a Event page
      *
      * All missing attribute will not be update.
      *
-     * @Route("/{_locale}/gallery/{id}",
-     *  name="api_gallery_patch",
+     * @Route("/{_locale}/event/{id}",
+     *  name="api_event_patch",
      *  methods={"PATCH"},
      *  requirements={
      *      "_locale": "en|fr",
@@ -486,14 +455,14 @@ class GalleryController extends AbstractFOSRestController
      *    ),
      *    @SWG\Response(
      *     response=404,
-     *     description="The Gallery page is not found"
+     *     description="The Event page is not found"
      *    ),
      *    @SWG\Parameter(
-     *     name="A part of a JSON Gallery",
+     *     name="A part of a JSON Event",
      *     in="body",
      *     required=true,
-     *     @SWG\Schema(ref=@Model(type=Gallery::class)),
-     *     description="A part of a JSon Gallery"
+     *     @SWG\Schema(ref=@Model(type=Event::class)),
+     *     description="A part of a JSon Event"
      *    )
      * )
      *
@@ -508,93 +477,39 @@ class GalleryController extends AbstractFOSRestController
     private function putOrPatch(Request $request, string $id, bool $clearData)
     {
         $this->denyAccessUnlessGranted("ROLE_MERCHANT");
-        $existingGallery = $this->getGalleryById($id);
-        if ($existingGallery instanceof JsonResponse)
-            return $existingGallery;
-        $form = $this->createForm(GalleryType::class, $existingGallery);
+        $existingEvent = $this->getEventById($id);
+        if ($existingEvent instanceof JsonResponse)
+            return $existingEvent;
+        $form = $this->createForm(EventType::class, $existingEvent);
         $data = $this->getDataFromJson($request, true, $this->translator);
         if ($data instanceof JSonResponse) {
             return $data;
         }
 
         $this->setLang($data, $this->title);
+        $this->setLang($data, $this->subtitle);
         $this->setLang($data, $this->description);
-        $responseSeparator = $this->createOrUpdateMediaObject($data, $this->separator, $clearData);
-        $responseMain = $this->createOrUpdateMediaObject($data, $this->main, $clearData);
-        $responseShowCase = $this->createOrUpdateMediaObject($data, $this->showCase, $clearData);
-        $this->manageArrayMediaObject($data, $this->medias, $existingGallery);
+        $responseImage = $this->createOrUpdateMediaObject($data, $this->image, $clearData);
         $form->submit($data, $clearData);
 
         $validation = $this->validationErrorWithChild(
             $form,
             $this,
-            $responseSeparator,
-            $this->separator,
+            $responseImage,
+            $this->image,
             $this->translator
         );
         if ($validation instanceof JsonResponse)
             return $validation;
-        $validation = $this->validationErrorWithChild(
-            $form,
-            $this,
-            $responseMain,
-            $this->main,
-            $this->translator
-        );
-        if ($validation instanceof JsonResponse) {
-            return $validation;
-        }
-        $validation = $this->validationErrorWithChild(
-            $form,
-            $this,
-            $responseShowCase,
-            $this->showCase,
-            $this->translator
-        );
-        if ($validation instanceof JsonResponse) {
-            return $validation;
-        }
+
         $insertData = $form->getData();
         $this->translate($insertData, $this->title, $this->entityManager, $clearData);
+        $this->translate($insertData, $this->subtitle, $this->entityManager, $clearData);
         $this->translate($insertData, $this->description, $this->entityManager, $clearData);
 
         $this->entityManager->flush();
 
         return $this->view(null, Response::HTTP_NO_CONTENT);
-    }
-
-    private function manageArrayMediaObject(array &$data, string $field, Gallery $gallery)
-    {
-        if (isset($data[$field])) {
-            foreach ($data[$field] as $media) {
-                $find = false;
-                if (!isset($media['id'])) {
-                    return;
-                }
-                foreach ($gallery->getMedias() as $in_media) {
-                    if ($in_media->getId() === $media['id']) {
-                        $find = true;
-                        break;
-                    }
-                }
-                if (!$find) {
-                    $gallery->addMedia($this->findMediaById($media['id']));
-                }
-            }
-            foreach ($gallery->getMedias() as $media) {
-                $find = false;
-                foreach ($data[$field] as $out_media) {
-                    if ($out_media['id'] === $media->getId()) {
-                        $find = true;
-                        break;
-                    }
-                }
-                if (!$find) {
-                    $gallery->removeMedia($media);
-                }
-            }
-            unset($data[$field]);
-        }
     }
 
     /**
@@ -614,10 +529,10 @@ class GalleryController extends AbstractFOSRestController
         return $media;
     }
     /**
-     * Delete the gallery page.
+     * Delete the event page.
      *
-     * @Route("/{_locale}/gallery/{id}",
-     *  name="api_gallery_delete",
+     * @Route("/{_locale}/event/{id}",
+     *  name="api_event_delete",
      *  methods={"DELETE"},
      *  requirements={
      *      "_locale": "en|fr",
@@ -627,12 +542,12 @@ class GalleryController extends AbstractFOSRestController
      * @SWG\Delete()
      * @SWG\Response(
      *     response=204,
-     *     description="The gallery page is correctly delete",
+     *     description="The event page is correctly delete",
      * )
      *
      * @SWG\Response(
      *     response=404,
-     *     description="The gallery page doesnot exists."
+     *     description="The event page doesnot exists."
      * )
      *
      * 
@@ -641,11 +556,11 @@ class GalleryController extends AbstractFOSRestController
     public function deleteAction(string $id)
     {
         $this->denyAccessUnlessGranted("ROLE_ADMIN");
-        $gallery = $this->getGalleryById($id);
-        if ($gallery instanceof JsonResponse)
-            return $gallery;
+        $event = $this->getEventById($id);
+        if ($event instanceof JsonResponse)
+            return $event;
 
-        $this->entityManager->remove($gallery);
+        $this->entityManager->remove($event);
         $this->entityManager->flush();
 
         return $this->view(
@@ -654,12 +569,12 @@ class GalleryController extends AbstractFOSRestController
         );
     }
 
-    private function getGalleryById(string $id)
+    private function getEventById(string $id)
     {
-        $gallery = $this->galleryRepository->find($id);
-        if (null === $gallery) {
+        $event = $this->eventRepository->find($id);
+        if (null === $event) {
             throw new NotFoundHttpException();
         }
-        return $gallery;
+        return $event;
     }
 }
