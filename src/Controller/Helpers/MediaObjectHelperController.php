@@ -30,6 +30,7 @@ trait MediaObjectHelperController
         $img64 = $data['image'];
         $isBase64 = true;
         if ($img64) {
+            $directoryName = $this->getParameter('media_object');
             if (is_string($img64)) {
                 if (preg_match('/^data:image\/(\w+)\+?\w*;base64,/', $img64, $type)) {
                     $img64 = substr($img64, strpos($img64, ',') + 1);
@@ -62,7 +63,6 @@ trait MediaObjectHelperController
                 $filename = uniqid() . "." . $type;
             }
             try {
-                $directoryName = $this->getParameter('media_object');
                 //Check if the directory already exists.
                 if (!is_dir($directoryName)) {
                     //Directory does not exist, so lets create it.
@@ -101,6 +101,7 @@ trait MediaObjectHelperController
                 throw new Exception('image.resize.failed');
             }
             $this->deleteImage($oldFilename);
+            chmod($directoryName, 755);
             return $filename;
         }
     }

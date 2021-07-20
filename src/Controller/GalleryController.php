@@ -183,6 +183,8 @@ class GalleryController extends AbstractFOSRestController
         $this->entityManager->persist($insertData);
 
         $this->entityManager->flush();
+        $this->setTranslation($insertData);
+
         return  $this->view($insertData, Response::HTTP_CREATED);
     }
 
@@ -222,6 +224,38 @@ class GalleryController extends AbstractFOSRestController
         return $this->view($gallery);
     }
 
+    private function setTranslation(Gallery $gallery)
+    {
+
+        $repository = $this->entityManager->getRepository('Gedmo\Translatable\Entity\Translation');
+
+        $array = $this->createTranslatableArray();
+        $this->addTranslatableVar(
+            $array,
+            $repository->findTranslations($gallery)
+        );
+        if ($gallery->getMain() != null)
+            $this->addTranslatableVar(
+                $array,
+                $repository->findTranslations($gallery->getMain()),
+                $this->main
+            );
+        if ($gallery->getSeparator() != null)
+            $this->addTranslatableVar(
+                $array,
+                $repository->findTranslations($gallery->getSeparator()),
+                $this->separator
+            );
+        if ($gallery->getShowCase() != null)
+            $this->addTranslatableVar(
+                $array,
+                $repository->findTranslations($gallery->getShowCase()),
+                $this->separator
+            );
+        $gallery->setTranslations($array);
+        return $gallery;
+    }
+
     /**
      * Expose the gallery page information with all languages for merchant/admin edition.
      *
@@ -256,32 +290,7 @@ class GalleryController extends AbstractFOSRestController
         $gallery = $this->getGalleryById($id);
         if ($gallery instanceof JsonResponse)
             return $gallery;
-        $repository = $this->entityManager->getRepository('Gedmo\Translatable\Entity\Translation');
-
-        $array = $this->createTranslatableArray();
-        $this->addTranslatableVar(
-            $array,
-            $repository->findTranslations($gallery)
-        );
-        if ($gallery->getMain() != null)
-            $this->addTranslatableVar(
-                $array,
-                $repository->findTranslations($gallery->getMain()),
-                $this->main
-            );
-        if ($gallery->getSeparator() != null)
-            $this->addTranslatableVar(
-                $array,
-                $repository->findTranslations($gallery->getSeparator()),
-                $this->separator
-            );
-        if ($gallery->getShowCase() != null)
-            $this->addTranslatableVar(
-                $array,
-                $repository->findTranslations($gallery->getShowCase()),
-                $this->separator
-            );
-        $gallery->setTranslations($array);
+        $this->setTranslation($gallery);
 
         return $this->view($gallery);
     }

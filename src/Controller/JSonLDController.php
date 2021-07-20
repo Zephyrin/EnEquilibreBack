@@ -159,7 +159,7 @@ class JSonLDController extends AbstractFOSRestController
     /**
      * Expose a JSonLD.
      * 
-     * @Route("/{id}/jsonld/",
+     * @Route("/{id}/jsonld",
      *  name="api_jsonld_get",
      *  methods={"GET"},
      *  requirements={

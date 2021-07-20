@@ -69,6 +69,7 @@ security:
     access_control:
         - { path: ^/api/(fr|en)/auth/login_check, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/doc, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/media, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/.*/jsonld, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/(fr|en)/auth/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/(fr|en)/mediaobjects?, roles: IS_AUTHENTICATED_ANONYMOUSLY, methods: [ GET ] }
